@@ -54,11 +54,13 @@ import authRoutes from './routes/auth';
 import clientRoutes from './routes/clients';
 import orderRoutes from './routes/orders';
 import invoiceRoutes from './routes/invoices';
+import paymentRoutes from './routes/payments';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
