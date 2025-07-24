@@ -40,7 +40,7 @@ interface CompanyInfo {
 }
 
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter!: nodemailer.Transporter;
   private templateCache: Map<string, string> = new Map();
 
   constructor() {
@@ -61,7 +61,7 @@ export class EmailService {
       },
     };
 
-    this.transporter = nodemailer.createTransporter(config);
+    this.transporter = nodemailer.createTransport(config);
   }
 
   /**

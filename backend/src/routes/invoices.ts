@@ -634,21 +634,8 @@ router.post('/:id/send', async (req: Request, res: Response): Promise<void> => {
           sentDate: new Date(),
         },
         include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              company: true,
-            }
-          },
-          order: {
-            select: {
-              id: true,
-              description: true,
-              frequency: true,
-            }
-          }
+          client: true,
+          order: true,
         },
       });
     }
