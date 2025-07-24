@@ -162,6 +162,16 @@ export const invoiceService = {
   },
 
   /**
+   * Download invoice as PDF
+   */
+  async downloadInvoicePdf(id: string): Promise<Blob> {
+    const response = await api.get(`/api/invoices/${id}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  /**
    * Get invoice statistics for dashboard
    */
   async getInvoiceStatistics(): Promise<InvoiceStatistics> {

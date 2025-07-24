@@ -37,6 +37,7 @@ import {
   Receipt as ReceiptIcon,
   AttachMoney as MoneyIcon,
   Schedule as ScheduleIcon,
+  PictureAsPdf as PdfIcon,
 } from '@mui/icons-material';
 import { 
   invoiceService, 
@@ -167,6 +168,32 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     if (selectedInvoice && onStatusChange) {
       onStatusChange(selectedInvoice, newStatus);
     }
+    handleMenuClose();
+  };
+
+  const handlePdfDownload = async () => {
+    if (!selectedInvoice) return;
+    
+    try {
+      // Use the invoiceService to download PDF
+      const pdfBlob = await invoiceService.downloadInvoicePdf(selectedInvoice.id);
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${selectedInvoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+      setError('Failed to download PDF. Please try again.');
+    }
+    
     handleMenuClose();
   };
 
@@ -394,6 +421,11 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         <MenuItem onClick={handleEdit}>
           <EditIcon sx={{ mr: 1, fontSize: 20 }} />
           View Details
+        </MenuItem>
+        
+        <MenuItem onClick={handlePdfDownload}>
+          <PdfIcon sx={{ mr: 1, fontSize: 20 }} />
+          Download PDF
         </MenuItem>
         
         {/* Status Change Options */}
