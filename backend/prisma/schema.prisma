@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  email     String   @unique
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders   Order[]
+  invoices Invoice[]
+
+  @@map("clients")
+}
+
+enum OrderFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+  CUSTOM
+}
+
+enum OrderStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+model Order {
+  id              String         @id @default(cuid())
+  clientId        String
+  description     String
+  amount          Float
+  frequency       OrderFrequency
+  status          OrderStatus    @default(ACTIVE)
+  startDate       DateTime
+  nextInvoiceDate DateTime
+  customDays      Int?           // For custom frequency
+  leadTimeDays    Int?           // Override global lead time
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+
+  @@map("orders")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  orderId       String
+  clientId      String
+  invoiceNumber String        @unique
+  amount        Float
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  sentDate      DateTime?
+  paidDate      DateTime?
+  status        InvoiceStatus @default(DRAFT)
+  pdfPath       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  client           Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  paymentReminders PaymentReminder[]
+  payments         Payment[]
+
+  @@map("invoices")
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CREDIT_CARD
+  CHECK
+  CASH
+  OTHER
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String
+  amount    Float
+  method    PaymentMethod
+  paidDate  DateTime      @default(now())
+  notes     String?
+  createdAt DateTime      @default(now())
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+enum ReminderType {
+  PRE_DUE
+  DUE_DATE
+  OVERDUE_3_DAYS
+  OVERDUE_7_DAYS
+  OVERDUE_14_DAYS
+  CUSTOM
+}
+
+model PaymentReminder {
+  id           String       @id @default(cuid())
+  invoiceId    String
+  reminderType ReminderType
+  sentDate     DateTime     @default(now())
+  emailSent    Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+
+  // Relations
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payment_reminders")
+}
+
+enum EmailTemplateType {
+  INVOICE
+  REMINDER
+  PAYMENT_CONFIRMATION
+  WELCOME
+}
+
+model EmailTemplate {
+  id        String            @id @default(cuid())
+  name      String
+  type      EmailTemplateType
+  subject   String
+  body      String // HTML content
+  isDefault Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("email_templates")
+}
+
+model Settings {
+  id                    String  @id @default(cuid())
+  companyName           String
+  companyAddress        String?
+  companyEmail          String
+  companyPhone          String?
+  companyLogo           String?
+  invoiceNumberPrefix   String  @default("INV")
+  defaultLeadTimeDays   Int     @default(3)
+  defaultDueDateDays    Int     @default(30)
+  defaultPaymentTerms   String  @default("Net 30")
+  enableEmailReminders  Boolean @default(true)
+  reminderDaysBefore    Int     @default(3)
+  reminderDaysOverdue   String  @default("3,7,14") // Comma-separated
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // CREATE, UPDATE, DELETE, etc.
+  entity    String   // client, order, invoice, etc.
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}
