@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Reminder - Invoice {{invoiceNumber}}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+        
+        .reminder-message {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .reminder-message .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .reminder-message h3 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .reminder-message p {
+            margin: 0;
+            color: #92400e;
+            font-weight: 500;
+        }
+        
+        .invoice-summary {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .invoice-summary h3 {
+            margin: 0 0 15px 0;
+            color: #2563eb;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .invoice-details {
+            display: table;
+            width: 100%;
+        }
+        
+        .invoice-row {
+            display: table-row;
+        }
+        
+        .invoice-label {
+            display: table-cell;
+            padding: 8px 0;
+            font-weight: 600;
+            color: #374151;
+            width: 40%;
+        }
+        
+        .invoice-value {
+            display: table-cell;
+            padding: 8px 0;
+            color: #6b7280;
+        }
+        
+        .amount-highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #dc2626;
+        }
+        
+        .urgent-notice {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #dc2626;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .urgent-notice h4 {
+            margin: 0 0 10px 0;
+            color: #dc2626;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .urgent-notice ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .contact-info {
+            background-color: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .contact-info h4 {
+            margin: 0 0 10px 0;
+            color: #2563eb;
+            font-size: 16px;
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .footer .company-info {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 25px 0;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .header, .content, .footer {
+                padding: 20px;
+            }
+            
+            .invoice-details {
+                display: block;
+            }
+            
+            .invoice-row {
+                display: block;
+                margin-bottom: 10px;
+            }
+            
+            .invoice-label, .invoice-value {
+                display: block;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Payment Reminder</h1>
+            <p>{{companyName}}</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Dear {{clientName}},
+            </div>
+            
+            <!-- Reminder Message -->
+            <div class="reminder-message">
+                <div class="icon">⏰</div>
+                <h3>Payment Reminder</h3>
+                <p>{{reminderMessage}}</p>
+            </div>
+            
+            <!-- Invoice Summary -->
+            <div class="invoice-summary">
+                <h3>Invoice Details</h3>
+                <div class="invoice-details">
+                    <div class="invoice-row">
+                        <div class="invoice-label">Invoice Number:</div>
+                        <div class="invoice-value"><strong>{{invoiceNumber}}</strong></div>
+                    </div>
+                    <div class="invoice-row">
+                        <div class="invoice-label">Original Due Date:</div>
+                        <div class="invoice-value">{{dueDate}}</div>
+                    </div>
+                    <div class="invoice-row">
+                        <div class="invoice-label">Amount Due:</div>
+                        <div class="invoice-value amount-highlight">${{amount}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Urgent Notice -->
+            <div class="urgent-notice">
+                <h4>Action Required</h4>
+                <p>To avoid any service interruption or late fees, please process payment immediately using one of the following methods:</p>
+                <ul>
+                    <li>Bank transfer to the account details provided in the original invoice</li>
+                    <li>Check mailed to our business address</li>
+                    <li>Contact us to arrange alternative payment methods</li>
+                </ul>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="contact-info">
+                <h4>Need Assistance?</h4>
+                <p>If you have any questions about this invoice, need to discuss payment arrangements, or believe there's an error, please contact us immediately:</p>
+                <p><strong>Email:</strong> {{companyEmail}}<br>
+                <strong>Phone:</strong> {{companyPhone}}</p>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p>We value our business relationship and appreciate your prompt attention to this matter. If you have already sent payment, please disregard this reminder and accept our thanks.</p>
+            
+            <p>Thank you for your immediate attention to this invoice.</p>
+            
+            <p>Best regards,<br>
+            <strong>{{companyName}} Billing Department</strong></p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="company-info">{{companyName}}</p>
+            <p>{{companyEmail}} | {{companyPhone}}</p>
+            <p>© {{currentYear}} {{companyName}}. All rights reserved.</p>
+            <div style="margin-top: 15px; font-size: 12px; color: #9ca3af;">
+                <p>This is an automated reminder. Please contact us if you need assistance.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

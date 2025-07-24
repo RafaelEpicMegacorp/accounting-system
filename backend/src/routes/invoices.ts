@@ -12,6 +12,7 @@ import {
   canGenerateInvoiceFromOrder
 } from '../utils/invoiceUtils';
 import { PDFService } from '../services/pdfService';
+import { emailService } from '../services/emailService';
 
 const router = Router();
 
@@ -544,6 +545,231 @@ router.get('/:id/pdf', async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       message: 'Failed to generate PDF',
       error: 'GENERATE_PDF_ERROR',
+    });
+  }
+});
+
+/**
+ * POST /api/invoices/:id/send
+ * Send invoice via email
+ */
+router.post('/:id/send', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid invoice ID',
+        error: 'INVALID_INVOICE_ID',
+      });
+      return;
+    }
+
+    // Get invoice with full details
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        client: true,
+        order: true,
+      },
+    });
+
+    if (!invoice) {
+      res.status(404).json({
+        message: 'Invoice not found',
+        error: 'INVOICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Check if invoice can be sent (should not be draft for sending)
+    if (invoice.status === 'CANCELLED') {
+      res.status(400).json({
+        message: 'Cannot send cancelled invoice',
+        error: 'INVOICE_CANCELLED',
+      });
+      return;
+    }
+
+    // Prepare invoice data for email service
+    const invoiceData = {
+      id: invoice.id,
+      orderId: invoice.orderId,
+      clientId: invoice.clientId,
+      invoiceNumber: invoice.invoiceNumber,
+      amount: invoice.amount,
+      issueDate: invoice.issueDate.toISOString(),
+      dueDate: invoice.dueDate.toISOString(),
+      sentDate: invoice.sentDate?.toISOString(),
+      paidDate: invoice.paidDate?.toISOString(),
+      status: invoice.status as 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE' | 'CANCELLED',
+      createdAt: invoice.createdAt.toISOString(),
+      updatedAt: invoice.updatedAt.toISOString(),
+      client: {
+        id: invoice.client.id,
+        name: invoice.client.name,
+        email: invoice.client.email,
+        company: invoice.client.company || undefined,
+        phone: invoice.client.phone || undefined,
+        address: invoice.client.address || undefined,
+      },
+      order: {
+        id: invoice.order.id,
+        description: invoice.order.description,
+        frequency: invoice.order.frequency,
+        status: invoice.order.status,
+      },
+    };
+
+    // Send email
+    await emailService.sendInvoiceEmail(invoiceData);
+
+    // Update invoice status to SENT if it was DRAFT
+    let updatedInvoice = invoice;
+    if (invoice.status === 'DRAFT') {
+      updatedInvoice = await prisma.invoice.update({
+        where: { id },
+        data: {
+          status: 'SENT',
+          sentDate: new Date(),
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              company: true,
+            }
+          },
+          order: {
+            select: {
+              id: true,
+              description: true,
+              frequency: true,
+            }
+          }
+        },
+      });
+    }
+
+    res.json({
+      message: 'Invoice sent successfully via email',
+      data: { 
+        invoice: updatedInvoice,
+        emailSent: true,
+        sentTo: invoice.client.email
+      }
+    });
+  } catch (error) {
+    console.error('Send invoice email error:', error);
+    res.status(500).json({
+      message: 'Failed to send invoice email',
+      error: 'SEND_INVOICE_EMAIL_ERROR',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
+ * POST /api/invoices/:id/reminder
+ * Send payment reminder email
+ */
+router.post('/:id/reminder', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { reminderType } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid invoice ID',
+        error: 'INVALID_INVOICE_ID',
+      });
+      return;
+    }
+
+    if (!reminderType || !['before_due', 'due_today', 'overdue'].includes(reminderType)) {
+      res.status(400).json({
+        message: 'Invalid reminder type. Must be: before_due, due_today, or overdue',
+        error: 'INVALID_REMINDER_TYPE',
+      });
+      return;
+    }
+
+    // Get invoice with full details
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        client: true,
+        order: true,
+      },
+    });
+
+    if (!invoice) {
+      res.status(404).json({
+        message: 'Invoice not found',
+        error: 'INVOICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Only send reminders for SENT or OVERDUE invoices
+    if (!['SENT', 'OVERDUE'].includes(invoice.status)) {
+      res.status(400).json({
+        message: 'Can only send reminders for sent or overdue invoices',
+        error: 'INVALID_INVOICE_STATUS_FOR_REMINDER',
+      });
+      return;
+    }
+
+    // Prepare invoice data for email service
+    const invoiceData = {
+      id: invoice.id,
+      orderId: invoice.orderId,
+      clientId: invoice.clientId,
+      invoiceNumber: invoice.invoiceNumber,
+      amount: invoice.amount,
+      issueDate: invoice.issueDate.toISOString(),
+      dueDate: invoice.dueDate.toISOString(),
+      sentDate: invoice.sentDate?.toISOString(),
+      paidDate: invoice.paidDate?.toISOString(),
+      status: invoice.status as 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE' | 'CANCELLED',
+      createdAt: invoice.createdAt.toISOString(),
+      updatedAt: invoice.updatedAt.toISOString(),
+      client: {
+        id: invoice.client.id,
+        name: invoice.client.name,
+        email: invoice.client.email,
+        company: invoice.client.company || undefined,
+        phone: invoice.client.phone || undefined,
+        address: invoice.client.address || undefined,
+      },
+      order: {
+        id: invoice.order.id,
+        description: invoice.order.description,
+        frequency: invoice.order.frequency,
+        status: invoice.order.status,
+      },
+    };
+
+    // Send reminder email
+    await emailService.sendPaymentReminderEmail(invoiceData, reminderType);
+
+    res.json({
+      message: 'Payment reminder sent successfully',
+      data: { 
+        invoice: invoice,
+        reminderType,
+        reminderSent: true,
+        sentTo: invoice.client.email
+      }
+    });
+  } catch (error) {
+    console.error('Send payment reminder error:', error);
+    res.status(500).json({
+      message: 'Failed to send payment reminder',
+      error: 'SEND_PAYMENT_REMINDER_ERROR',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

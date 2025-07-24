@@ -38,6 +38,8 @@ import {
   AttachMoney as MoneyIcon,
   Schedule as ScheduleIcon,
   PictureAsPdf as PdfIcon,
+  Email as EmailIcon,
+  Alarm as AlarmIcon,
 } from '@mui/icons-material';
 import { 
   invoiceService, 
@@ -195,6 +197,66 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     }
     
     handleMenuClose();
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedInvoice) return;
+    
+    try {
+      setLoading(true);
+      const result = await invoiceService.sendInvoiceEmail(selectedInvoice.id);
+      
+      // Show success message
+      setError(''); // Clear any previous errors
+      console.log(`Invoice ${selectedInvoice.invoiceNumber} sent successfully to ${result.sentTo}`);
+      
+      // Refresh the invoice list to show updated status
+      loadInvoices();
+      
+      // You could also show a success snackbar here
+      alert(`Invoice ${selectedInvoice.invoiceNumber} sent successfully to ${result.sentTo}!`);
+    } catch (error) {
+      console.error('Failed to send invoice email:', error);
+      setError('Failed to send invoice email. Please check your email configuration and try again.');
+    } finally {
+      setLoading(false);
+    }
+    
+    handleMenuClose();
+  };
+
+  const handleSendReminder = async (reminderType: 'before_due' | 'due_today' | 'overdue') => {
+    if (!selectedInvoice) return;
+    
+    try {
+      setLoading(true);
+      const result = await invoiceService.sendPaymentReminder(selectedInvoice.id, reminderType);
+      
+      // Show success message
+      setError(''); // Clear any previous errors
+      console.log(`Payment reminder sent for invoice ${selectedInvoice.invoiceNumber} to ${result.sentTo}`);
+      
+      // You could also show a success snackbar here
+      const reminderTypeText = reminderType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      alert(`${reminderTypeText} reminder sent successfully to ${result.sentTo}!`);
+    } catch (error) {
+      console.error('Failed to send payment reminder:', error);
+      setError('Failed to send payment reminder. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+    
+    handleMenuClose();
+  };
+
+  const canSendEmail = (invoice: InvoiceWithRelations): boolean => {
+    // Can send email for any invoice except cancelled
+    return invoice.status !== 'CANCELLED';
+  };
+
+  const canSendReminder = (invoice: InvoiceWithRelations): boolean => {
+    // Can only send reminders for sent or overdue invoices
+    return ['SENT', 'OVERDUE'].includes(invoice.status);
   };
 
   const getStatusIcon = (status: InvoiceStatus) => {
@@ -427,6 +489,32 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           <PdfIcon sx={{ mr: 1, fontSize: 20 }} />
           Download PDF
         </MenuItem>
+        
+        {/* Email Options */}
+        {selectedInvoice && canSendEmail(selectedInvoice) && (
+          <MenuItem onClick={handleSendEmail}>
+            <EmailIcon sx={{ mr: 1, fontSize: 20 }} />
+            Send Email
+          </MenuItem>
+        )}
+        
+        {/* Payment Reminder Options */}
+        {selectedInvoice && canSendReminder(selectedInvoice) && (
+          <>
+            <MenuItem onClick={() => handleSendReminder('before_due')}>
+              <AlarmIcon sx={{ mr: 1, fontSize: 20, color: 'info.main' }} />
+              Send Friendly Reminder
+            </MenuItem>
+            <MenuItem onClick={() => handleSendReminder('due_today')}>
+              <AlarmIcon sx={{ mr: 1, fontSize: 20, color: 'warning.main' }} />
+              Send Due Today Notice
+            </MenuItem>
+            <MenuItem onClick={() => handleSendReminder('overdue')}>
+              <AlarmIcon sx={{ mr: 1, fontSize: 20, color: 'error.main' }} />
+              Send Overdue Notice
+            </MenuItem>
+          </>
+        )}
         
         {/* Status Change Options */}
         {selectedInvoice && getNextAllowedStatuses(selectedInvoice).map((status) => (

@@ -172,6 +172,22 @@ export const invoiceService = {
   },
 
   /**
+   * Send invoice via email
+   */
+  async sendInvoiceEmail(id: string): Promise<{ emailSent: boolean; sentTo: string; invoice: Invoice }> {
+    const response = await api.post(`/api/invoices/${id}/send`);
+    return response.data.data;
+  },
+
+  /**
+   * Send payment reminder email
+   */
+  async sendPaymentReminder(id: string, reminderType: 'before_due' | 'due_today' | 'overdue'): Promise<{ reminderSent: boolean; sentTo: string; reminderType: string }> {
+    const response = await api.post(`/api/invoices/${id}/reminder`, { reminderType });
+    return response.data.data;
+  },
+
+  /**
    * Get invoice statistics for dashboard
    */
   async getInvoiceStatistics(): Promise<InvoiceStatistics> {

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{invoiceNumber}}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .greeting {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+        
+        .invoice-summary {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .invoice-summary h3 {
+            margin: 0 0 15px 0;
+            color: #2563eb;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .invoice-details {
+            display: table;
+            width: 100%;
+        }
+        
+        .invoice-row {
+            display: table-row;
+        }
+        
+        .invoice-label {
+            display: table-cell;
+            padding: 8px 0;
+            font-weight: 600;
+            color: #374151;
+            width: 40%;
+        }
+        
+        .invoice-value {
+            display: table-cell;
+            padding: 8px 0;
+            color: #6b7280;
+        }
+        
+        .amount-highlight {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .attachment-notice {
+            background-color: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        
+        .attachment-notice .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .payment-instructions {
+            background-color: #f0f9ff;
+            border-left: 4px solid #2563eb;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .payment-instructions h4 {
+            margin: 0 0 10px 0;
+            color: #2563eb;
+            font-size: 16px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .footer {
+            background-color: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .footer .company-info {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 25px 0;
+        }
+        
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .header, .content, .footer {
+                padding: 20px;
+            }
+            
+            .invoice-details {
+                display: block;
+            }
+            
+            .invoice-row {
+                display: block;
+                margin-bottom: 10px;
+            }
+            
+            .invoice-label, .invoice-value {
+                display: block;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>{{companyName}}</h1>
+            <p>Professional Invoice Services</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Dear {{clientName}},
+            </div>
+            
+            <p>We hope this email finds you well. Please find attached your invoice from {{companyName}}.</p>
+            
+            <!-- Invoice Summary -->
+            <div class="invoice-summary">
+                <h3>Invoice Summary</h3>
+                <div class="invoice-details">
+                    <div class="invoice-row">
+                        <div class="invoice-label">Invoice Number:</div>
+                        <div class="invoice-value"><strong>{{invoiceNumber}}</strong></div>
+                    </div>
+                    <div class="invoice-row">
+                        <div class="invoice-label">Service:</div>
+                        <div class="invoice-value">{{orderDescription}}</div>
+                    </div>
+                    <div class="invoice-row">
+                        <div class="invoice-label">Due Date:</div>
+                        <div class="invoice-value">{{dueDate}}</div>
+                    </div>
+                    <div class="invoice-row">
+                        <div class="invoice-label">Amount Due:</div>
+                        <div class="invoice-value amount-highlight">${{amount}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attachment Notice -->
+            <div class="attachment-notice">
+                <div class="icon">📄</div>
+                <p><strong>PDF Invoice Attached</strong><br>
+                Please review the attached PDF for complete invoice details.</p>
+            </div>
+            
+            <!-- Payment Instructions -->
+            <div class="payment-instructions">
+                <h4>Payment Instructions</h4>
+                <p>Please process payment by the due date shown above. You can send payment via:</p>
+                <ul>
+                    <li>Bank transfer to the account details on the invoice</li>
+                    <li>Check mailed to our business address</li>
+                    <li>Contact us at {{companyEmail}} for other payment options</li>
+                </ul>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p>If you have any questions about this invoice or need to discuss payment arrangements, please don't hesitate to contact us.</p>
+            
+            <p>Thank you for your business and continued trust in our services!</p>
+            
+            <p>Best regards,<br>
+            <strong>{{companyName}}</strong></p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p class="company-info">{{companyName}}</p>
+            <p>{{companyEmail}} | {{companyPhone}}</p>
+            <p>© {{currentYear}} {{companyName}}. All rights reserved.</p>
+            <div style="margin-top: 15px; font-size: 12px; color: #9ca3af;">
+                <p>This is an automated email. Please do not reply directly to this message.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
