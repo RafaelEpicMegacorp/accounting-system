@@ -30,7 +30,7 @@ export interface InvoiceWithRelations extends Invoice {
     email: string;
     company?: string;
   };
-  order: {
+  order?: {
     id: string;
     description: string;
     frequency: string;
@@ -46,7 +46,7 @@ export interface InvoiceDetail extends Invoice {
     phone?: string;
     address?: string;
   };
-  order: {
+  order?: {
     id: string;
     description: string;
     frequency: string;

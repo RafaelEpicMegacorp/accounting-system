@@ -113,6 +113,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const response = await api.post('/api/auth/login', { email, password });
       
+      console.log('Login response:', response.data);
+      
       const { user: userData, token: authToken } = response.data;
       
       setUser(userData);
@@ -124,6 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return { success: true };
     } catch (error: any) {
+      console.error('Login error:', error);
       const errorMessage = error.response?.data?.message || 'Login failed';
       return { success: false, error: errorMessage };
     } finally {
@@ -137,6 +140,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const response = await api.post('/api/auth/register', { name, email, password });
       
+      console.log('Registration response:', response.data);
+      
       const { user: userData, token: authToken } = response.data;
       
       setUser(userData);
@@ -148,6 +153,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return { success: true };
     } catch (error: any) {
+      console.error('Registration error:', error);
       const errorMessage = error.response?.data?.message || 'Registration failed';
       return { success: false, error: errorMessage };
     } finally {
