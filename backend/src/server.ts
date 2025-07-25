@@ -19,10 +19,13 @@ const PORT = process.env.PORT || 3001;
 
 // Security middleware
 app.use(helmet());
+// CORS configuration
+const corsOrigins = process.env.NODE_ENV === 'production' 
+  ? (process.env.CORS_ORIGINS || 'https://yourdomain.com').split(',') 
+  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:3000'];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:3000'],
+  origin: corsOrigins,
   credentials: true
 }));
 
