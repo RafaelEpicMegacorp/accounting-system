@@ -234,7 +234,17 @@ router.post('/',
       }
 
       // Get invoice number (custom or generated)
-      const invoiceNumber = await getInvoiceNumber(customInvoiceNumber);
+      let invoiceNumber;
+      try {
+        invoiceNumber = await getInvoiceNumber(customInvoiceNumber);
+      } catch (error) {
+        console.error('Invoice number generation error:', error);
+        res.status(400).json({
+          message: error instanceof Error ? error.message : 'Invalid invoice number',
+          error: 'INVALID_INVOICE_NUMBER',
+        });
+        return;
+      }
 
       // Create the invoice with conditional include
       let invoice;

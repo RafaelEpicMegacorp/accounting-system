@@ -87,11 +87,19 @@ export const validateClientCreation: ValidationChain[] = [
     .custom((value) => {
       if (!value) return true; // Optional field
       
-      // Allow common phone number formats:
-      // +1234567890, (555) 123-4567, 555-123-4567, 555.123.4567, 5551234567
-      const phoneRegex = /^(\+?1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/;
+      // Clean phone number: remove all non-digits, preserve + if at start
+      const hasPlus = value.startsWith('+');
+      const digitsOnly = value.replace(/[^\d]/g, '');
+      const cleaned = hasPlus ? '+' + digitsOnly : digitsOnly;
       
-      if (!phoneRegex.test(value)) {
+      // Check for valid patterns:
+      // +1xxxxxxxxxx (11 digits total: +1 + 10 digits)
+      // +xxxxxxxxxx (10-11 digits with +)
+      // 1xxxxxxxxxx (11 digits starting with 1)  
+      // xxxxxxxxxx (10 digits)
+      const isValid = /^(\+1\d{10}|\+\d{10,11}|1\d{10}|\d{10})$/.test(cleaned);
+      
+      if (!isValid) {
         throw new Error('Please provide a valid phone number (e.g., +1234567890, (555) 123-4567, 555-123-4567)');
       }
       
