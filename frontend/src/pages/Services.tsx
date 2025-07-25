@@ -21,24 +21,14 @@ import {
   Business as ServiceIcon 
 } from '@mui/icons-material';
 import LoadingSpinner from '../components/LoadingSpinner';
-
-interface Service {
-  id: string;
-  name: string;
-  description?: string;
-  category: string;
-  defaultPrice?: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { serviceLibraryService, ServiceLibrary, ServiceCategory } from '../services/serviceLibraryService';
 
 const Services: React.FC = () => {
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<ServiceLibrary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<ServiceCategory | ''>('');
 
   const categories = [
     { value: 'CONTENT_MARKETING', label: 'Content Marketing' },
@@ -55,20 +45,20 @@ const Services: React.FC = () => {
       setLoading(true);
       setError('');
 
-      const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
-      if (categoryFilter) params.append('category', categoryFilter);
-
-      const response = await fetch(`/api/services?${params}`, {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch services');
+      const params: { search?: string; category?: ServiceCategory; isActive?: boolean } = {
+        isActive: true // Only show active services by default
+      };
+      
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      
+      if (categoryFilter) {
+        params.category = categoryFilter;
       }
 
-      const data = await response.json();
-      setServices(data.data.services || []);
+      const servicesData = await serviceLibraryService.getServices(params);
+      setServices(servicesData || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load services');
       setServices([]);
@@ -152,7 +142,7 @@ const Services: React.FC = () => {
                 <InputLabel>Category</InputLabel>
                 <Select
                   value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  onChange={(e) => setCategoryFilter(e.target.value as ServiceCategory | '')}
                   label="Category"
                 >
                   <MenuItem value="">All Categories</MenuItem>
