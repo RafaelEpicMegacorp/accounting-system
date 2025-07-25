@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Orders from './pages/Orders';
 import Invoices from './pages/Invoices';
+import Services from './pages/Services';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -52,6 +53,7 @@ const Navigation: React.FC = () => {
             <Button color="inherit" href="/clients">Clients</Button>
             <Button color="inherit" href="/orders">Orders</Button>
             <Button color="inherit" href="/invoices">Invoices</Button>
+            <Button color="inherit" href="/services">Services</Button>
             <Typography variant="body2" sx={{ mx: 2 }}>
               Hello, {user?.name}
             </Typography>
@@ -99,6 +101,11 @@ function App() {
                 <Route path="/invoices" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <Invoices />
+                  </ProtectedRoute>
+                } />
+                <Route path="/services" element={
+                  <ProtectedRoute fallback={<Navigate to="/login" replace />}>
+                    <Services />
                   </ProtectedRoute>
                 } />
               </Routes>

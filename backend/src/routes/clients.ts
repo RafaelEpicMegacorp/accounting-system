@@ -6,6 +6,7 @@ import {
   handleValidationErrors,
   sanitizeInput 
 } from '../middleware/validation';
+import { CacheService, CACHE_TTL } from '../utils/cache';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -39,6 +40,22 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     const validSortFields = ['name', 'email', 'company', 'createdAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
 
+    // Generate cache key for this query
+    const cacheKey = CacheService.generateKey('clients_list', {
+      page,
+      limit,
+      search,
+      sortBy: sortField,
+      sortOrder
+    });
+
+    // Try to get from cache first
+    const cachedResult = CacheService.get(cacheKey);
+    if (cachedResult) {
+      res.json(cachedResult);
+      return;
+    }
+
     // Get total count for pagination
     const totalCount = await prisma.client.count({
       where: searchConditions,
@@ -70,7 +87,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.json({
+    const result = {
       message: 'Clients retrieved successfully',
       data: {
         clients,
@@ -83,7 +100,12 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
           hasPreviousPage: page > 1,
         }
       }
-    });
+    };
+
+    // Cache the result for 2 minutes
+    CacheService.set(cacheKey, result, CACHE_TTL.SHORT);
+
+    res.json(result);
   } catch (error) {
     console.error('Get clients error:', error);
     res.status(500).json({
@@ -215,6 +237,9 @@ router.post('/',
         },
       });
 
+      // Invalidate clients list cache
+      CacheService.invalidatePattern('clients_list');
+
       res.status(201).json({
         message: 'Client created successfully',
         data: { client }
@@ -300,6 +325,9 @@ router.put('/:id',
         },
       });
 
+      // Invalidate clients list cache
+      CacheService.invalidatePattern('clients_list');
+
       res.json({
         message: 'Client updated successfully',
         data: { client: updatedClient }
@@ -383,6 +411,9 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     await prisma.client.delete({
       where: { id },
     });
+
+    // Invalidate clients list cache
+    CacheService.invalidatePattern('clients_list');
 
     res.json({
       message: 'Client deleted successfully',

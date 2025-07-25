@@ -67,6 +67,11 @@ model Client {
   orders   Order[]
   invoices Invoice[]
 
+  // Indexes for performance
+  @@index([name])
+  @@index([email])
+  @@index([company])
+  @@index([createdAt])
   @@map("clients")
 }
 
@@ -151,6 +156,12 @@ model Order {
   client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
   invoices Invoice[]
 
+  // Indexes for performance
+  @@index([clientId])
+  @@index([status])
+  @@index([nextInvoiceDate])
+  @@index([createdAt])
+  @@index([status, nextInvoiceDate])
   @@map("orders")
 }
 
@@ -196,6 +207,15 @@ model Invoice {
   paymentReminders PaymentReminder[]
   payments         Payment[]
 
+  // Indexes for performance
+  @@index([clientId])
+  @@index([companyId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([issueDate])
+  @@index([invoiceNumber])
+  @@index([status, dueDate])
+  @@index([clientId, status])
   @@map("invoices")
 }
 
