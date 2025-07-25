@@ -26,12 +26,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use('/api', limiter);
+// Rate limiting - Disabled for development
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100 // limit each IP to 100 requests per windowMs
+// });
+// app.use('/api', limiter);
 
 // Logging
 app.use(morgan('combined'));
@@ -54,11 +54,17 @@ import authRoutes from './routes/auth';
 import clientRoutes from './routes/clients';
 import orderRoutes from './routes/orders';
 import invoiceRoutes from './routes/invoices';
+import paymentRoutes from './routes/payments';
+import companyRoutes from './routes/companies';
+import serviceRoutes from './routes/services';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

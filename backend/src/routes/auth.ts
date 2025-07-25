@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../server';
+import { PrismaClient } from '@prisma/client';
 import { generateToken } from '../utils/jwt';
 import { hashPassword, comparePassword } from '../utils/password';
 import { 
@@ -11,6 +11,7 @@ import {
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 /**
  * POST /api/auth/register

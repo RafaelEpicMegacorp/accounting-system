@@ -126,7 +126,7 @@ export class EmailService {
         month: 'long',
         day: 'numeric',
       }),
-      orderDescription: invoice.order.description,
+      orderDescription: invoice.order?.description || 'Manual Invoice',
       currentYear: new Date().getFullYear(),
     };
 

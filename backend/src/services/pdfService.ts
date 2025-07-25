@@ -82,9 +82,9 @@ export class PDFService {
       .replace(/\{\{clientPhone\}\}/g, data.client.phone || '')
       .replace(/\{\{clientAddress\}\}/g, data.client.address || '')
       
-      // Order information
-      .replace(/\{\{orderDescription\}\}/g, data.order.description)
-      .replace(/\{\{orderFrequency\}\}/g, data.order.frequency)
+      // Order information  
+      .replace(/\{\{orderDescription\}\}/g, data.order?.description || 'Manual Invoice')
+      .replace(/\{\{orderFrequency\}\}/g, data.order?.frequency || 'One-time')
       
       // Financial information
       .replace(/\{\{amount\}\}/g, formatCurrency(data.amount))

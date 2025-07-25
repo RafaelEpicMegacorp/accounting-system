@@ -31,10 +31,14 @@ import {
   Invoice, 
   InvoiceFormData,
   formatCurrency,
-  formatDate
+  formatDate,
+  getCurrencyOptions,
+  Currency
 } from '../../services/invoiceService';
 import { clientService, Client } from '../../services/clientService';
 import { orderService, OrderWithClient } from '../../services/orderService';
+import { companyService, Company } from '../../services/companyService';
+import { serviceLibraryService, ServiceLibrary, getServiceCategoryOptions } from '../../services/serviceLibraryService';
 
 interface InvoiceFormProps {
   open: boolean;
@@ -69,16 +73,22 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     const dates = getDefaultDates();
     return {
       clientId: preselectedClientId || '',
+      companyId: '',
       orderId: preselectedOrderId,
       amount: 0,
+      currency: 'USD',
       issueDate: dates.issueDate,
       dueDate: dates.dueDate,
+      items: [],
     };
   });
   
   const [clients, setClients] = useState<Client[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [services, setServices] = useState<ServiceLibrary[]>([]);
   const [orders, setOrders] = useState<OrderWithClient[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<OrderWithClient | null>(null);
   const [errors, setErrors] = useState<Partial<InvoiceFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,6 +106,31 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       console.error('Failed to load clients:', err);
     } finally {
       setLoadingClients(false);
+    }
+  };
+
+  // Load companies
+  const loadCompanies = async () => {
+    try {
+      const companiesData = await companyService.getCompanies();
+      setCompanies(companiesData);
+      // Set first company as default if available
+      if (companiesData.length > 0 && !formData.companyId) {
+        setSelectedCompany(companiesData[0]);
+        setFormData(prev => ({ ...prev, companyId: companiesData[0].id }));
+      }
+    } catch (err) {
+      console.error('Failed to load companies:', err);
+    }
+  };
+
+  // Load services
+  const loadServices = async () => {
+    try {
+      const servicesData = await serviceLibraryService.getServices({ isActive: true });
+      setServices(servicesData);
+    } catch (err) {
+      console.error('Failed to load services:', err);
     }
   };
 
@@ -123,17 +158,24 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
       const dates = getDefaultDates();
       setFormData({
         clientId: preselectedClientId || '',
+        companyId: '',
         orderId: preselectedOrderId,
         amount: 0,
+        currency: 'USD',
         issueDate: dates.issueDate,
         dueDate: dates.dueDate,
+        items: [],
       });
       setErrors({});
       setError('');
       setSelectedOrder(null);
+      setSelectedClient(null);
+      setSelectedCompany(null);
       
       // Load initial data
       loadClients();
+      loadCompanies();
+      loadServices();
       
       // Set preselected client if provided
       if (preselectedClientId) {
@@ -143,7 +185,6 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           loadOrdersForClient(preselectedClientId);
         }
       } else {
-        setSelectedClient(null);
         setOrders([]);
       }
     }
@@ -202,6 +243,16 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
+  // Handle company selection
+  const handleCompanyChange = (company: Company | null) => {
+    setSelectedCompany(company);
+    setFormData(prev => ({ ...prev, companyId: company?.id || '' }));
+    
+    if (errors.companyId) {
+      setErrors(prev => ({ ...prev, companyId: undefined }));
+    }
+  };
+
   // Handle order selection
   const handleOrderChange = (order: OrderWithClient | null) => {
     setSelectedOrder(order);
@@ -219,6 +270,11 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     // Client validation
     if (!formData.clientId) {
       newErrors.clientId = 'Please select a client';
+    }
+
+    // Company validation
+    if (!formData.companyId) {
+      newErrors.companyId = 'Please select a company';
     }
 
     // Amount validation
@@ -301,6 +357,55 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
         )}
 
         <Grid container spacing={3} sx={{ mt: 1 }}>
+          {/* Company Selection */}
+          <Grid item xs={12} md={6}>
+            <Autocomplete
+              options={companies}
+              getOptionLabel={(option) => option.name}
+              value={selectedCompany}
+              onChange={(_, newValue) => handleCompanyChange(newValue)}
+              disabled={isSubmitting}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Your Company"
+                  required
+                  error={Boolean(errors.companyId)}
+                  helperText={errors.companyId}
+                  InputProps={{
+                    ...params.InputProps,
+                    startAdornment: (
+                      <>
+                        <InputAdornment position="start">
+                          <PersonIcon color="action" />
+                        </InputAdornment>
+                        {params.InputProps.startAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          {/* Currency Selection */}
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="Currency"
+              value={formData.currency}
+              onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value as Currency }))}
+              disabled={isSubmitting}
+            >
+              {getCurrencyOptions().map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.symbol} {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
           {/* Client Selection */}
           <Grid item xs={12}>
             <Autocomplete
@@ -385,7 +490,8 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <MoneyIcon color="action" />$
+                    <MoneyIcon color="action" />
+                    {getCurrencyOptions().find(c => c.value === formData.currency)?.symbol || '$'}
                   </InputAdornment>
                 ),
               }}
@@ -449,7 +555,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Grid>
 
           {/* Invoice Preview */}
-          {formData.amount > 0 && selectedClient && (
+          {formData.amount > 0 && selectedClient && selectedCompany && (
             <Grid item xs={12}>
               <Card sx={{ bgcolor: 'grey.50' }}>
                 <CardContent>
@@ -459,6 +565,15 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   </Typography>
                   
                   <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        From Company
+                      </Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {selectedCompany.name}
+                      </Typography>
+                    </Grid>
+
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Client
@@ -486,7 +601,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </Typography>
                       <Typography variant="h6" color="primary.main" sx={{ display: 'flex', alignItems: 'center' }}>
                         <MoneyIcon sx={{ mr: 0.5, fontSize: 20 }} />
-                        {formatCurrency(formData.amount)}
+                        {formatCurrency(formData.amount, formData.currency)}
                       </Typography>
                     </Grid>
                     

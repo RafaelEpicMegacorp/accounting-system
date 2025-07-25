@@ -40,6 +40,8 @@ import {
   PictureAsPdf as PdfIcon,
   Email as EmailIcon,
   Alarm as AlarmIcon,
+  Payment as PaymentIcon,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { 
   invoiceService, 
@@ -56,6 +58,9 @@ import {
   canUpdateStatus,
   getNextAllowedStatuses
 } from '../../services/invoiceService';
+import { paymentService } from '../../services/paymentService';
+import PaymentRecordDialog from '../payments/PaymentRecordDialog';
+import PaymentHistoryDialog from '../payments/PaymentHistoryDialog';
 
 interface InvoiceListProps {
   onInvoiceSelect?: (invoice: InvoiceWithRelations) => void;
@@ -84,6 +89,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithRelations | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentHistoryDialogOpen, setPaymentHistoryDialogOpen] = useState(false);
+  const [invoiceDetails, setInvoiceDetails] = useState<any>(null);
+  const [remainingAmount, setRemainingAmount] = useState(0);
 
   // Load invoices
   const loadInvoices = async () => {
@@ -249,6 +258,43 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     handleMenuClose();
   };
 
+  const handleRecordPayment = async () => {
+    if (!selectedInvoice) return;
+    
+    try {
+      // Get detailed invoice info with payment history
+      const invoiceDetail = await invoiceService.getInvoice(selectedInvoice.id);
+      const paymentHistory = await paymentService.getInvoicePaymentHistory(selectedInvoice.id);
+      
+      setInvoiceDetails(invoiceDetail);
+      setRemainingAmount(paymentHistory.summary.remainingAmount);
+      setPaymentDialogOpen(true);
+    } catch (error) {
+      console.error('Failed to load invoice details:', error);
+      setError('Failed to load invoice details. Please try again.');
+    }
+    
+    handleMenuClose();
+  };
+
+  const handleViewPaymentHistory = () => {
+    if (!selectedInvoice) return;
+    
+    setPaymentHistoryDialogOpen(true);
+    handleMenuClose();
+  };
+
+  const handlePaymentRecorded = () => {
+    // Refresh the invoice list to show updated status and amounts
+    loadInvoices();
+    setPaymentDialogOpen(false);
+  };
+
+  const handlePaymentDeleted = () => {
+    // Refresh the invoice list to show updated status and amounts
+    loadInvoices();
+  };
+
   const canSendEmail = (invoice: InvoiceWithRelations): boolean => {
     // Can send email for any invoice except cancelled
     return invoice.status !== 'CANCELLED';
@@ -386,10 +432,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {invoice.order.description}
+                          {invoice.order?.description || 'Manual Invoice'}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {invoice.order.frequency}
+                          {invoice.order?.frequency || 'One-time'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -490,6 +536,20 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           Download PDF
         </MenuItem>
         
+        {/* Payment Options */}
+        {selectedInvoice && selectedInvoice.status !== 'CANCELLED' && (
+          <>
+            <MenuItem onClick={handleRecordPayment}>
+              <PaymentIcon sx={{ mr: 1, fontSize: 20, color: 'success.main' }} />
+              Record Payment
+            </MenuItem>
+            <MenuItem onClick={handleViewPaymentHistory}>
+              <HistoryIcon sx={{ mr: 1, fontSize: 20, color: 'info.main' }} />
+              Payment History
+            </MenuItem>
+          </>
+        )}
+        
         {/* Email Options */}
         {selectedInvoice && canSendEmail(selectedInvoice) && (
           <MenuItem onClick={handleSendEmail}>
@@ -532,6 +592,23 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           </MenuItem>
         )}
       </Menu>
+
+      {/* Payment Recording Dialog */}
+      <PaymentRecordDialog
+        open={paymentDialogOpen}
+        onClose={() => setPaymentDialogOpen(false)}
+        invoice={invoiceDetails}
+        remainingAmount={remainingAmount}
+        onPaymentRecorded={handlePaymentRecorded}
+      />
+
+      {/* Payment History Dialog */}
+      <PaymentHistoryDialog
+        open={paymentHistoryDialogOpen}
+        onClose={() => setPaymentHistoryDialogOpen(false)}
+        invoiceId={selectedInvoice?.id || null}
+        onPaymentDeleted={handlePaymentDeleted}
+      />
     </Box>
   );
 };

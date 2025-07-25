@@ -1,6 +1,6 @@
 export interface InvoiceDetail {
   id: string;
-  orderId: string;
+  orderId: string | null;
   clientId: string;
   invoiceNumber: string;
   amount: number;
@@ -25,5 +25,5 @@ export interface InvoiceDetail {
     description: string;
     frequency: string;
     status: string;
-  };
+  } | null;
 }

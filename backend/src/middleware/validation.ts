@@ -84,8 +84,27 @@ export const validateClientCreation: ValidationChain[] = [
   
   body('phone')
     .optional()
-    .isMobilePhone('any')
-    .withMessage('Please provide a valid phone number'),
+    .custom((value) => {
+      if (!value) return true; // Optional field
+      
+      // Clean phone number: remove all non-digits, preserve + if at start
+      const hasPlus = value.startsWith('+');
+      const digitsOnly = value.replace(/[^\d]/g, '');
+      const cleaned = hasPlus ? '+' + digitsOnly : digitsOnly;
+      
+      // Check for valid patterns:
+      // +1xxxxxxxxxx (11 digits total: +1 + 10 digits)
+      // +xxxxxxxxxx (10-11 digits with +)
+      // 1xxxxxxxxxx (11 digits starting with 1)  
+      // xxxxxxxxxx (10 digits)
+      const isValid = /^(\+1\d{10}|\+\d{10,11}|1\d{10}|\d{10})$/.test(cleaned);
+      
+      if (!isValid) {
+        throw new Error('Please provide a valid phone number (e.g., +1234567890, (555) 123-4567, 555-123-4567)');
+      }
+      
+      return true;
+    }),
   
   body('address')
     .optional()
@@ -137,6 +156,12 @@ export const validateInvoiceCreation: ValidationChain[] = [
     .optional()
     .matches(/^c[a-z0-9]{24}$/)
     .withMessage('Please provide a valid order ID'),
+  
+  body('invoiceNumber')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Invoice number must be between 3 and 50 characters'),
   
   body('amount')
     .isFloat({ min: 0.01 })

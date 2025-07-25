@@ -3,18 +3,22 @@ import { Client } from './clientService';
 
 // Types
 export type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'BTC' | 'ETH';
 
 export interface Invoice {
   id: string;
-  orderId: string;
+  orderId?: string;
   clientId: string;
+  companyId: string;
   invoiceNumber: string;
   amount: number;
+  currency: string;
   issueDate: string;
   dueDate: string;
   sentDate?: string;
   paidDate?: string;
   status: InvoiceStatus;
+  notes?: string;
   pdfPath?: string;
   createdAt: string;
   updatedAt: string;
@@ -27,11 +31,12 @@ export interface InvoiceWithRelations extends Invoice {
     email: string;
     company?: string;
   };
-  order: {
+  order?: {
     id: string;
     description: string;
     frequency: string;
   };
+  items?: InvoiceItem[];
 }
 
 export interface InvoiceDetail extends Invoice {
@@ -43,7 +48,7 @@ export interface InvoiceDetail extends Invoice {
     phone?: string;
     address?: string;
   };
-  order: {
+  order?: {
     id: string;
     description: string;
     frequency: string;
@@ -51,12 +56,34 @@ export interface InvoiceDetail extends Invoice {
   };
 }
 
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  serviceId?: string;
+  name: string;
+  description?: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  createdAt: string;
+}
+
 export interface InvoiceFormData {
   clientId: string;
+  companyId: string;
   orderId?: string;
   amount: number;
+  currency?: string;
   issueDate: string;
   dueDate: string;
+  notes?: string;
+  items?: Array<{
+    serviceId?: string;
+    name: string;
+    description?: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
 }
 
 export interface InvoiceListResponse {
@@ -215,12 +242,20 @@ export const getStatusColor = (status: InvoiceStatus): 'default' | 'info' | 'suc
   return (statusOption?.color as 'default' | 'info' | 'success' | 'error' | 'warning') || 'default';
 };
 
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: currency,
   }).format(amount);
 };
+
+export const getCurrencyOptions = (): Array<{ value: Currency; label: string; symbol: string }> => [
+  { value: 'USD', label: 'US Dollar', symbol: '$' },
+  { value: 'EUR', label: 'Euro', symbol: '€' },
+  { value: 'GBP', label: 'British Pound', symbol: '£' },
+  { value: 'BTC', label: 'Bitcoin', symbol: '₿' },
+  { value: 'ETH', label: 'Ethereum', symbol: 'Ξ' },
+];
 
 export const formatDate = (date: string): string => {
   return new Date(date).toLocaleDateString('en-US', {

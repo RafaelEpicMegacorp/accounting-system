@@ -21,21 +21,101 @@ model User {
   @@map("users")
 }
 
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  address     String?
+  city        String?
+  state       String?
+  country     String?
+  postalCode  String?
+  taxCode     String?
+  email       String
+  phone       String?
+  website     String?
+  logo        String?
+  signature   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  invoices       Invoice[]
+  paymentMethods PaymentMethod[]
+
+  @@map("companies")
+}
+
 model Client {
-  id        String   @id @default(cuid())
-  name      String
-  company   String?
-  email     String   @unique
-  phone     String?
-  address   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(cuid())
+  name             String
+  company          String?
+  email            String   @unique
+  phone            String?
+  address          String?
+  city             String?
+  state            String?
+  country          String?
+  postalCode       String?
+  vatNumber        String?
+  registrationNumber String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   // Relations
   orders   Order[]
   invoices Invoice[]
 
   @@map("clients")
+}
+
+enum ServiceCategory {
+  CONTENT_MARKETING
+  PODCAST_SPONSORSHIP
+  SOCIAL_MEDIA
+  ADVERTISING
+  CREATIVE_SERVICES
+  PLATFORM_MANAGEMENT
+  OTHER
+}
+
+model ServiceLibrary {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  category    ServiceCategory
+  defaultPrice Float?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // Relations
+  invoiceItems InvoiceItem[]
+
+  @@map("service_library")
+}
+
+enum PaymentMethodType {
+  CRYPTO_WALLET
+  BANK_ACCOUNT
+  OTHER
+}
+
+model PaymentMethod {
+  id        String            @id @default(cuid())
+  companyId String
+  type      PaymentMethodType
+  name      String            // e.g., "ETH Wallet", "Main Bank Account"
+  details   Json              // Flexible storage for wallet addresses, IBAN, etc.
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("payment_methods")
 }
 
 enum OrderFrequency {
@@ -82,46 +162,78 @@ enum InvoiceStatus {
   CANCELLED
 }
 
+enum Currency {
+  USD
+  EUR
+  GBP
+  BTC
+  ETH
+}
+
 model Invoice {
   id            String        @id @default(cuid())
-  orderId       String
+  orderId       String?       // Optional for manual invoices
   clientId      String
+  companyId     String
   invoiceNumber String        @unique
   amount        Float
+  currency      Currency      @default(USD)
   issueDate     DateTime      @default(now())
   dueDate       DateTime
   sentDate      DateTime?
   paidDate      DateTime?
   status        InvoiceStatus @default(DRAFT)
+  notes         String?
   pdfPath       String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   // Relations
-  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order            Order?            @relation(fields: [orderId], references: [id], onDelete: Cascade)
   client           Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  items            InvoiceItem[]
   paymentReminders PaymentReminder[]
   payments         Payment[]
 
   @@map("invoices")
 }
 
-enum PaymentMethod {
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  serviceId   String?  // Optional reference to service library
+  name        String
+  description String?
+  quantity    Int      @default(1)
+  unitPrice   Float
+  amount      Float
+  createdAt   DateTime @default(now())
+
+  // Relations
+  invoice Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  service ServiceLibrary? @relation(fields: [serviceId], references: [id])
+
+  @@map("invoice_items")
+}
+
+enum PaymentType {
   BANK_TRANSFER
   CREDIT_CARD
   CHECK
   CASH
+  CRYPTO
   OTHER
 }
 
 model Payment {
-  id        String        @id @default(cuid())
+  id        String      @id @default(cuid())
   invoiceId String
   amount    Float
-  method    PaymentMethod
-  paidDate  DateTime      @default(now())
+  method    PaymentType
+  paidDate  DateTime    @default(now())
   notes     String?
-  createdAt DateTime      @default(now())
+  createdAt DateTime    @default(now())
 
   // Relations
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
