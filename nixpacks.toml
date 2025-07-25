@@ -1,22 +1,13 @@
-[variables]
-# Tell Nixpacks this is a Node.js monorepo
-NIXPACKS_NODE_VERSION = "18"
-# Force Railway sync
+providers = ["nodejs"]
 
-[phases.setup]
-# Change to backend directory for all operations
-dependsOn = []
+[variables]
+NIXPACKS_NODE_VERSION = "18"
 
 [phases.install]
-# Install dependencies from backend directory
-dependsOn = ["setup"]
 cmds = ["cd backend && npm ci"]
 
 [phases.build]
-# Build the application
-dependsOn = ["install"]
 cmds = ["cd backend && npm run build"]
 
 [start]
-# Start the application from backend directory
 cmd = "cd backend && npm start"
