@@ -12,7 +12,7 @@ export interface Invoice {
   companyId: string;
   invoiceNumber: string;
   amount: number;
-  currency: Currency;
+  currency: string;
   issueDate: string;
   dueDate: string;
   sentDate?: string;
@@ -31,11 +31,6 @@ export interface InvoiceWithRelations extends Invoice {
     email: string;
     company?: string;
   };
-  company: {
-    id: string;
-    name: string;
-    email: string;
-  };
   order?: {
     id: string;
     description: string;
@@ -53,7 +48,7 @@ export interface InvoiceDetail extends Invoice {
     phone?: string;
     address?: string;
   };
-  order: {
+  order?: {
     id: string;
     description: string;
     frequency: string;
@@ -78,7 +73,7 @@ export interface InvoiceFormData {
   companyId: string;
   orderId?: string;
   amount: number;
-  currency?: Currency;
+  currency?: string;
   issueDate: string;
   dueDate: string;
   notes?: string;
@@ -247,7 +242,7 @@ export const getStatusColor = (status: InvoiceStatus): 'default' | 'info' | 'suc
   return (statusOption?.color as 'default' | 'info' | 'success' | 'error' | 'warning') || 'default';
 };
 
-export const formatCurrency = (amount: number, currency: Currency = 'USD'): string => {
+export const formatCurrency = (amount: number, currency: string = 'USD'): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,

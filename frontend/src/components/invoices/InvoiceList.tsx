@@ -432,10 +432,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2">
-                          {invoice.order.description}
+                          {invoice.order?.description || 'Manual Invoice'}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {invoice.order.frequency}
+                          {invoice.order?.frequency || 'One-time'}
                         </Typography>
                       </TableCell>
                       <TableCell>
