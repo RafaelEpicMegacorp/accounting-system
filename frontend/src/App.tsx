@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 import { Container, AppBar, Toolbar, Typography, Box, Button, CircularProgress } from '@mui/material';
 import { AuthProvider, useAuth, ProtectedRoute } from './contexts/AuthContext';
+import ThemeProvider from './theme/ThemeProvider';
+import ThemeToggle from './components/ThemeToggle';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Orders from './pages/Orders';
@@ -11,18 +11,6 @@ import Invoices from './pages/Invoices';
 import Services from './pages/Services';
 import Login from './pages/Login';
 import Register from './pages/Register';
-
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 // Navigation component with auth awareness
 const Navigation: React.FC = () => {
@@ -54,6 +42,8 @@ const Navigation: React.FC = () => {
             <Button color="inherit" href="/orders">Orders</Button>
             <Button color="inherit" href="/invoices">Invoices</Button>
             <Button color="inherit" href="/services">Services</Button>
+            <Box sx={{ flexGrow: 1 }} />
+            <ThemeToggle size="small" />
             <Typography variant="body2" sx={{ mx: 2 }}>
               Hello, {user?.name}
             </Typography>
@@ -61,6 +51,8 @@ const Navigation: React.FC = () => {
           </>
         ) : (
           <>
+            <Box sx={{ flexGrow: 1 }} />
+            <ThemeToggle size="small" />
             <Button color="inherit" href="/login">Login</Button>
             <Button color="inherit" href="/register">Register</Button>
           </>
@@ -72,8 +64,7 @@ const Navigation: React.FC = () => {
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider>
       <AuthProvider>
         <Router>
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -111,7 +102,16 @@ function App() {
               </Routes>
             </Container>
             
-            <Box component="footer" sx={{ py: 2, mt: 'auto', backgroundColor: 'grey.100' }}>
+            <Box 
+              component="footer" 
+              sx={{ 
+                py: 2, 
+                mt: 'auto', 
+                backgroundColor: 'background.neutral',
+                borderTop: 1,
+                borderColor: 'divider'
+              }}
+            >
               <Container maxWidth="lg">
                 <Typography variant="body2" color="text.secondary" align="center">
                   © 2024 Accounting System. Built with React and Material-UI.
