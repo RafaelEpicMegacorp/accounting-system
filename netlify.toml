@@ -42,12 +42,25 @@
 
 # Production context settings
 [context.production]
-  environment = { VITE_API_URL = "https://your-backend-api.com" }
+  environment = { 
+    VITE_API_URL = "https://your-backend-api.com",
+    DATABASE_URL = "postgresql://neondb_owner:npg_bzHgcEhN96kD@ep-mute-frost-afhqhft0-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  }
 
 # Deploy preview settings
 [context.deploy-preview]
-  environment = { VITE_API_URL = "https://your-staging-api.com" }
+  environment = { 
+    VITE_API_URL = "https://your-staging-api.com",
+    DATABASE_URL = "postgresql://neondb_owner:npg_bzHgcEhN96kD@ep-mute-frost-afhqhft0-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  }
 
-# Branch deploy settings
+# Branch deploy settings for live branch
+[context.live]
+  environment = { 
+    VITE_API_URL = "https://your-backend-api.com",
+    DATABASE_URL = "postgresql://neondb_owner:npg_bzHgcEhN96kD@ep-mute-frost-afhqhft0-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+  }
+
+# General branch deploy settings
 [context.branch-deploy]
   environment = { VITE_API_URL = "https://your-dev-api.com" }
