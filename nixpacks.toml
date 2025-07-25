@@ -1,6 +1,7 @@
 [variables]
 # Tell Nixpacks this is a Node.js monorepo
 NIXPACKS_NODE_VERSION = "18"
+# Force Railway sync
 
 [phases.setup]
 # Change to backend directory for all operations
