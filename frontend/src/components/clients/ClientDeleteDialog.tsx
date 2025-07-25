@@ -11,7 +11,7 @@ import {
   Box,
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
-import { clientService, ClientWithCounts } from '../../services/clientService';
+import { clientService, type ClientWithCounts } from '../../services/clientService';
 
 interface ClientDeleteDialogProps {
   open: boolean;

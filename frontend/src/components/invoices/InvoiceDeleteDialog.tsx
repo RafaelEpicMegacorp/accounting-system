@@ -124,7 +124,7 @@ const InvoiceDeleteDialog: React.FC<InvoiceDeleteDialogProps> = ({
                 </Box>
 
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Order:</strong> {invoice.order.description}
+                  <strong>Order:</strong> {invoice.order?.description || 'Manual Invoice'}
                 </Typography>
 
                 <Typography variant="body2">
