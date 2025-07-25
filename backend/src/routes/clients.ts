@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../server';
+import { PrismaClient } from '@prisma/client';
 import { authenticateToken } from '../middleware/auth';
 import { 
   validateClientCreation, 
@@ -8,6 +8,7 @@ import {
 } from '../middleware/validation';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 // All client routes require authentication
 router.use(authenticateToken);

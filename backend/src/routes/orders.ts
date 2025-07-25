@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../server';
+import { PrismaClient } from '@prisma/client';
 import { authenticateToken } from '../middleware/auth';
 import { 
   validateOrderCreation, 
@@ -13,8 +13,14 @@ import {
   getFrequencyDisplayText,
   calculateEstimatedAnnualRevenue
 } from '../utils/dateCalculations';
+import { 
+  generateInvoiceNumber,
+  calculateInvoiceDueDate,
+  canGenerateInvoiceFromOrder
+} from '../utils/invoiceUtils';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 // All order routes require authentication
 router.use(authenticateToken);
@@ -604,6 +610,98 @@ router.get('/:id/schedule', async (req: Request, res: Response): Promise<void> =
     res.status(500).json({
       message: 'Failed to retrieve order schedule',
       error: 'GET_ORDER_SCHEDULE_ERROR',
+    });
+  }
+});
+
+/**
+ * POST /api/orders/:id/generate-invoice
+ * Generate invoice from an order (alias route)
+ */
+router.post('/:id/generate-invoice', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid order ID',
+        error: 'INVALID_ORDER_ID',
+      });
+      return;
+    }
+
+    // Get order with client data
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        client: true,
+      },
+    });
+
+    if (!order) {
+      res.status(404).json({
+        message: 'Order not found',
+        error: 'ORDER_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Check if invoice can be generated from this order
+    const canGenerate = await canGenerateInvoiceFromOrder(order);
+    if (!canGenerate.allowed) {
+      res.status(400).json({
+        message: canGenerate.reason,
+        error: 'INVOICE_GENERATION_NOT_ALLOWED',
+      });
+      return;
+    }
+
+    // Generate invoice number
+    const invoiceNumber = await generateInvoiceNumber();
+
+    // Calculate due date (30 days from issue date by default, or use leadTimeDays)
+    const issueDate = new Date();
+    const dueDate = calculateInvoiceDueDate(issueDate, order.leadTimeDays);
+
+    // Create the invoice
+    const invoice = await prisma.invoice.create({
+      data: {
+        clientId: order.clientId,
+        orderId: order.id,
+        invoiceNumber,
+        amount: order.amount,
+        issueDate,
+        dueDate,
+        status: 'DRAFT',
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            company: true,
+          }
+        },
+        order: {
+          select: {
+            id: true,
+            description: true,
+            frequency: true,
+          }
+        }
+      },
+    });
+
+    res.status(201).json({
+      message: 'Invoice generated successfully from order',
+      data: { invoice }
+    });
+  } catch (error) {
+    console.error('Generate invoice from order error:', error);
+    res.status(500).json({
+      message: 'Failed to generate invoice from order',
+      error: 'GENERATE_INVOICE_FROM_ORDER_ERROR',
     });
   }
 });

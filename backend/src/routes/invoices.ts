@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prisma } from '../server';
+import { PrismaClient } from '@prisma/client';
 import { authenticateToken } from '../middleware/auth';
 import { 
   validateInvoiceCreation, 
@@ -8,6 +8,7 @@ import {
 } from '../middleware/validation';
 import { 
   generateInvoiceNumber,
+  getInvoiceNumber,
   calculateInvoiceDueDate,
   canGenerateInvoiceFromOrder
 } from '../utils/invoiceUtils';
@@ -15,6 +16,7 @@ import { PDFService } from '../services/pdfService';
 import { emailService } from '../services/emailService';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 // All invoice routes require authentication
 router.use(authenticateToken);
@@ -193,7 +195,7 @@ router.post('/',
   handleValidationErrors,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { clientId, orderId, amount, issueDate, dueDate } = req.body;
+      const { clientId, orderId, amount, issueDate, dueDate, invoiceNumber: customInvoiceNumber } = req.body;
 
       // Check if client exists
       const client = await prisma.client.findUnique({
@@ -231,38 +233,65 @@ router.post('/',
         }
       }
 
-      // Generate invoice number
-      const invoiceNumber = await generateInvoiceNumber();
+      // Get invoice number (custom or generated)
+      const invoiceNumber = await getInvoiceNumber(customInvoiceNumber);
 
-      // Create the invoice
-      const invoice = await prisma.invoice.create({
-        data: {
-          clientId,
-          orderId: orderId || null,
-          invoiceNumber,
-          amount: parseFloat(amount),
-          issueDate: new Date(issueDate),
-          dueDate: new Date(dueDate),
-          status: 'DRAFT',
-        },
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              company: true,
+      // Create the invoice with conditional include
+      let invoice;
+      if (orderId) {
+        // Create invoice with order relationship
+        invoice = await prisma.invoice.create({
+          data: {
+            clientId,
+            orderId,
+            invoiceNumber,
+            amount: parseFloat(amount),
+            issueDate: new Date(issueDate),
+            dueDate: new Date(dueDate),
+            status: 'DRAFT',
+          },
+          include: {
+            client: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                company: true,
+              }
+            },
+            order: {
+              select: {
+                id: true,
+                description: true,
+                frequency: true,
+              }
             }
           },
-          order: {
-            select: {
-              id: true,
-              description: true,
-              frequency: true,
+        });
+      } else {
+        // Create manual invoice without order relationship
+        invoice = await prisma.invoice.create({
+          data: {
+            clientId,
+            orderId: null,
+            invoiceNumber,
+            amount: parseFloat(amount),
+            issueDate: new Date(issueDate),
+            dueDate: new Date(dueDate),
+            status: 'DRAFT',
+          },
+          include: {
+            client: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                company: true,
+              }
             }
-          }
-        },
-      });
+          },
+        });
+      }
 
       res.status(201).json({
         message: 'Invoice created successfully',
@@ -516,12 +545,12 @@ router.get('/:id/pdf', async (req: Request, res: Response): Promise<void> => {
         phone: invoice.client.phone || undefined,
         address: invoice.client.address || undefined,
       },
-      order: {
+      order: invoice.order ? {
         id: invoice.order.id,
         description: invoice.order.description,
         frequency: invoice.order.frequency,
         status: invoice.order.status,
-      },
+      } : null,
     };
 
     // Get company info
@@ -613,12 +642,12 @@ router.post('/:id/send', async (req: Request, res: Response): Promise<void> => {
         phone: invoice.client.phone || undefined,
         address: invoice.client.address || undefined,
       },
-      order: {
+      order: invoice.order ? {
         id: invoice.order.id,
         description: invoice.order.description,
         frequency: invoice.order.frequency,
         status: invoice.order.status,
-      },
+      } : null,
     };
 
     // Send email
@@ -731,12 +760,12 @@ router.post('/:id/reminder', async (req: Request, res: Response): Promise<void> 
         phone: invoice.client.phone || undefined,
         address: invoice.client.address || undefined,
       },
-      order: {
+      order: invoice.order ? {
         id: invoice.order.id,
         description: invoice.order.description,
         frequency: invoice.order.frequency,
         status: invoice.order.status,
-      },
+      } : null,
     };
 
     // Send reminder email
@@ -813,6 +842,220 @@ router.delete('/:id', async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       message: 'Failed to delete invoice',
       error: 'DELETE_INVOICE_ERROR',
+    });
+  }
+});
+
+/**
+ * GET /api/invoices/:id/payments
+ * Get payment history for an invoice (alias route)
+ */
+router.get('/:id/payments', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid invoice ID',
+        error: 'INVALID_INVOICE_ID',
+      });
+      return;
+    }
+
+    // Get invoice with payments
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        payments: {
+          orderBy: { paidDate: 'desc' },
+        },
+        client: {
+          select: {
+            id: true,
+            name: true,
+            company: true,
+          },
+        },
+        order: {
+          select: {
+            id: true,
+            description: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      res.status(404).json({
+        message: 'Invoice not found',
+        error: 'INVOICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Calculate payment summary
+    const totalPaid = invoice.payments.reduce((sum, payment) => sum + payment.amount, 0);
+    const remainingAmount = invoice.amount - totalPaid;
+
+    res.json({
+      message: 'Payment history retrieved successfully',
+      data: {
+        invoice: {
+          id: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          amount: invoice.amount,
+          status: invoice.status,
+          client: invoice.client,
+          order: invoice.order,
+        },
+        payments: invoice.payments,
+        summary: {
+          totalPaid,
+          remainingAmount,
+          isFullyPaid: totalPaid >= invoice.amount,
+          paymentCount: invoice.payments.length,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get invoice payments error:', error);
+    res.status(500).json({
+      message: 'Failed to retrieve payment history',
+      error: 'GET_INVOICE_PAYMENTS_ERROR',
+    });
+  }
+});
+
+/**
+ * POST /api/invoices/:id/payments
+ * Record a payment for an invoice (alias route)
+ */
+router.post('/:id/payments', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { amount, method, paidDate, notes } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid invoice ID',
+        error: 'INVALID_INVOICE_ID',
+      });
+      return;
+    }
+
+    // Validate required fields
+    if (!amount || amount <= 0) {
+      res.status(400).json({
+        message: 'Amount must be a positive number',
+        error: 'INVALID_AMOUNT',
+      });
+      return;
+    }
+
+    if (!method || !['BANK_TRANSFER', 'CREDIT_CARD', 'CHECK', 'CASH', 'OTHER'].includes(method)) {
+      res.status(400).json({
+        message: 'Invalid payment method. Must be: BANK_TRANSFER, CREDIT_CARD, CHECK, CASH, or OTHER',
+        error: 'INVALID_PAYMENT_METHOD',
+      });
+      return;
+    }
+
+    // Get the invoice with current payments
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        payments: true,
+        client: true,
+        order: true,
+      },
+    });
+
+    if (!invoice) {
+      res.status(404).json({
+        message: 'Invoice not found',
+        error: 'INVOICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Calculate total paid amount including this payment
+    const currentPaidAmount = invoice.payments.reduce((sum, payment) => sum + payment.amount, 0);
+    const newTotalPaid = currentPaidAmount + parseFloat(amount);
+
+    // Validate payment amount doesn't exceed invoice amount
+    if (newTotalPaid > invoice.amount) {
+      res.status(400).json({
+        message: `Payment amount would exceed invoice total. Invoice amount: $${invoice.amount.toFixed(2)}, Already paid: $${currentPaidAmount.toFixed(2)}, Maximum additional payment: $${(invoice.amount - currentPaidAmount).toFixed(2)}`,
+        error: 'PAYMENT_EXCEEDS_INVOICE_AMOUNT',
+      });
+      return;
+    }
+
+    // Record the payment
+    const payment = await prisma.payment.create({
+      data: {
+        invoiceId: id,
+        amount: parseFloat(amount),
+        method,
+        paidDate: paidDate ? new Date(paidDate) : new Date(),
+        notes: notes || null,
+      },
+    });
+
+    // Update invoice status based on payment amount
+    let newStatus = invoice.status;
+    if (newTotalPaid >= invoice.amount) {
+      // Fully paid
+      newStatus = 'PAID';
+      await prisma.invoice.update({
+        where: { id },
+        data: {
+          status: 'PAID',
+          paidDate: payment.paidDate,
+        },
+      });
+    } else {
+      // Partially paid - keep current status but ensure it's not DRAFT
+      if (invoice.status === 'DRAFT') {
+        newStatus = 'SENT';
+        await prisma.invoice.update({
+          where: { id },
+          data: {
+            status: 'SENT',
+          },
+        });
+      }
+    }
+
+    // Get updated invoice with all payments
+    const updatedInvoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        payments: {
+          orderBy: { paidDate: 'desc' },
+        },
+        client: true,
+        order: true,
+      },
+    });
+
+    res.status(201).json({
+      message: 'Payment recorded successfully',
+      data: {
+        payment,
+        invoice: updatedInvoice,
+        paymentSummary: {
+          totalPaid: newTotalPaid,
+          remainingAmount: invoice.amount - newTotalPaid,
+          isFullyPaid: newTotalPaid >= invoice.amount,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Record payment error:', error);
+    res.status(500).json({
+      message: 'Failed to record payment',
+      error: 'RECORD_PAYMENT_ERROR',
     });
   }
 });

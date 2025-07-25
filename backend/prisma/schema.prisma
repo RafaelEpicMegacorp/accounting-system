@@ -84,7 +84,7 @@ enum InvoiceStatus {
 
 model Invoice {
   id            String        @id @default(cuid())
-  orderId       String
+  orderId       String?       // Optional for manual invoices
   clientId      String
   invoiceNumber String        @unique
   amount        Float
@@ -98,7 +98,7 @@ model Invoice {
   updatedAt     DateTime      @updatedAt
 
   // Relations
-  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order            Order?            @relation(fields: [orderId], references: [id], onDelete: Cascade)
   client           Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
   paymentReminders PaymentReminder[]
   payments         Payment[]

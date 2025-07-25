@@ -1,5 +1,6 @@
-import { prisma } from '../server';
-import { Order, OrderStatus } from '@prisma/client';
+import { PrismaClient, Order, OrderStatus } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 /**
  * Generate a unique invoice number
@@ -34,6 +35,36 @@ export const generateInvoiceNumber = async (): Promise<string> => {
   // Format with leading zeros (6 digits)
   const formattedNumber = nextNumber.toString().padStart(6, '0');
   return `${yearPrefix}${formattedNumber}`;
+};
+
+/**
+ * Validate and get invoice number (custom or generated)
+ * @param customInvoiceNumber - Optional custom invoice number provided by user
+ * @returns Valid unique invoice number
+ */
+export const getInvoiceNumber = async (customInvoiceNumber?: string): Promise<string> => {
+  if (customInvoiceNumber) {
+    // Validate custom invoice number format (basic validation)
+    if (customInvoiceNumber.trim().length < 3 || customInvoiceNumber.trim().length > 50) {
+      throw new Error('Custom invoice number must be between 3 and 50 characters');
+    }
+
+    // Check if custom invoice number already exists
+    const existingInvoice = await prisma.invoice.findFirst({
+      where: {
+        invoiceNumber: customInvoiceNumber.trim(),
+      },
+    });
+
+    if (existingInvoice) {
+      throw new Error(`Invoice number "${customInvoiceNumber}" already exists`);
+    }
+
+    return customInvoiceNumber.trim();
+  }
+
+  // Generate automatic invoice number if no custom number provided
+  return await generateInvoiceNumber();
 };
 
 /**

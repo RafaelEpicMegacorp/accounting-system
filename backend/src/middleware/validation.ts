@@ -84,8 +84,19 @@ export const validateClientCreation: ValidationChain[] = [
   
   body('phone')
     .optional()
-    .isMobilePhone('any')
-    .withMessage('Please provide a valid phone number'),
+    .custom((value) => {
+      if (!value) return true; // Optional field
+      
+      // Allow common phone number formats:
+      // +1234567890, (555) 123-4567, 555-123-4567, 555.123.4567, 5551234567
+      const phoneRegex = /^(\+?1[-.\s]?)?(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/;
+      
+      if (!phoneRegex.test(value)) {
+        throw new Error('Please provide a valid phone number (e.g., +1234567890, (555) 123-4567, 555-123-4567)');
+      }
+      
+      return true;
+    }),
   
   body('address')
     .optional()
@@ -137,6 +148,12 @@ export const validateInvoiceCreation: ValidationChain[] = [
     .optional()
     .matches(/^c[a-z0-9]{24}$/)
     .withMessage('Please provide a valid order ID'),
+  
+  body('invoiceNumber')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Invoice number must be between 3 and 50 characters'),
   
   body('amount')
     .isFloat({ min: 0.01 })
