@@ -10,8 +10,15 @@ import { PDFService } from './services/pdfService';
 // Load environment variables
 dotenv.config();
 
-// Initialize Prisma client
-export const prisma = new PrismaClient();
+// Initialize Prisma client with connection pooling and optimization
+export const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+});
 
 // Create Express app
 const app = express();
