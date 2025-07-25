@@ -313,13 +313,24 @@ export const generateInvoicesForDueOrders = async (): Promise<{
       const issueDate = new Date();
       const dueDate = calculateInvoiceDueDate(issueDate, order.leadTimeDays);
 
+      // Get default company (first active company)
+      const defaultCompany = await prisma.company.findFirst({
+        where: { isActive: true },
+      });
+
+      if (!defaultCompany) {
+        throw new Error('No active company found. Please create a company first.');
+      }
+
       // Create the invoice
       await prisma.invoice.create({
         data: {
           clientId: order.clientId,
+          companyId: defaultCompany.id,
           orderId: order.id,
           invoiceNumber,
           amount: order.amount,
+          currency: 'USD',
           issueDate,
           dueDate,
           status: 'DRAFT', // Start as draft, can be sent later

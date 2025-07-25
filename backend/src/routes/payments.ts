@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient, PaymentMethod } from '@prisma/client';
+import { PrismaClient, PaymentType } from '@prisma/client';
 import { body, param, validationResult } from 'express-validator';
 import { authenticateToken } from '../middleware/auth';
 import { sanitizeInput } from '../middleware/validation';
@@ -86,7 +86,7 @@ router.post(
         data: {
           invoiceId,
           amount,
-          method: method as PaymentMethod,
+          method: method as PaymentType,
           paidDate: paidDate ? new Date(paidDate) : new Date(),
           notes,
         },
@@ -324,7 +324,7 @@ router.put(
         where: { id: paymentId },
         data: {
           ...(amount !== undefined && { amount }),
-          ...(method && { method: method as PaymentMethod }),
+          ...(method && { method: method as PaymentType }),
           ...(paidDate && { paidDate: new Date(paidDate) }),
           ...(notes !== undefined && { notes }),
         },
@@ -492,7 +492,7 @@ router.get(
       }
 
       if (method) {
-        where.method = method as PaymentMethod;
+        where.method = method as PaymentType;
       }
 
       if (startDate || endDate) {

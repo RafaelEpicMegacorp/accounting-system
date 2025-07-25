@@ -663,13 +663,28 @@ router.post('/:id/generate-invoice', async (req: Request, res: Response): Promis
     const issueDate = new Date();
     const dueDate = calculateInvoiceDueDate(issueDate, order.leadTimeDays);
 
+    // Get default company (first active company)
+    const defaultCompany = await prisma.company.findFirst({
+      where: { isActive: true },
+    });
+
+    if (!defaultCompany) {
+      res.status(400).json({
+        message: 'No active company found. Please create a company first.',
+        error: 'NO_ACTIVE_COMPANY',
+      });
+      return;
+    }
+
     // Create the invoice
     const invoice = await prisma.invoice.create({
       data: {
         clientId: order.clientId,
+        companyId: defaultCompany.id,
         orderId: order.id,
         invoiceNumber,
         amount: order.amount,
+        currency: 'USD',
         issueDate,
         dueDate,
         status: 'DRAFT',
@@ -681,6 +696,13 @@ router.post('/:id/generate-invoice', async (req: Request, res: Response): Promis
             name: true,
             email: true,
             company: true,
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           }
         },
         order: {

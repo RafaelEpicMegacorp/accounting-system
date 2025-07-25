@@ -74,7 +74,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
       where: whereConditions,
     });
 
-    // Get invoices with client and order data
+    // Get invoices with client, company and order data
     const invoices = await prisma.invoice.findMany({
       where: whereConditions,
       include: {
@@ -84,6 +84,13 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
             name: true,
             email: true,
             company: true,
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           }
         },
         order: {
@@ -153,6 +160,17 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
             address: true,
           }
         },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            address: true,
+            city: true,
+            country: true,
+            taxCode: true,
+          }
+        },
         order: {
           select: {
             id: true,
@@ -195,7 +213,7 @@ router.post('/',
   handleValidationErrors,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { clientId, orderId, amount, issueDate, dueDate, invoiceNumber: customInvoiceNumber } = req.body;
+      const { clientId, companyId, orderId, amount, currency = 'USD', issueDate, dueDate, notes, invoiceNumber: customInvoiceNumber } = req.body;
 
       // Check if client exists
       const client = await prisma.client.findUnique({
@@ -206,6 +224,19 @@ router.post('/',
         res.status(404).json({
           message: 'Client not found',
           error: 'CLIENT_NOT_FOUND',
+        });
+        return;
+      }
+
+      // Check if company exists
+      const company = await prisma.company.findUnique({
+        where: { id: companyId },
+      });
+
+      if (!company) {
+        res.status(404).json({
+          message: 'Company not found',
+          error: 'COMPANY_NOT_FOUND',
         });
         return;
       }
@@ -253,11 +284,14 @@ router.post('/',
         invoice = await prisma.invoice.create({
           data: {
             clientId,
+            companyId,
             orderId,
             invoiceNumber,
             amount: parseFloat(amount),
+            currency,
             issueDate: new Date(issueDate),
             dueDate: new Date(dueDate),
+            notes,
             status: 'DRAFT',
           },
           include: {
@@ -267,6 +301,13 @@ router.post('/',
                 name: true,
                 email: true,
                 company: true,
+              }
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               }
             },
             order: {
@@ -283,11 +324,14 @@ router.post('/',
         invoice = await prisma.invoice.create({
           data: {
             clientId,
+            companyId,
             orderId: null,
             invoiceNumber,
             amount: parseFloat(amount),
+            currency,
             issueDate: new Date(issueDate),
             dueDate: new Date(dueDate),
+            notes,
             status: 'DRAFT',
           },
           include: {
@@ -297,6 +341,13 @@ router.post('/',
                 name: true,
                 email: true,
                 company: true,
+              }
+            },
+            company: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
               }
             }
           },
@@ -366,13 +417,28 @@ router.post('/generate/:orderId', async (req: Request, res: Response): Promise<v
     const issueDate = new Date();
     const dueDate = calculateInvoiceDueDate(issueDate, order.leadTimeDays);
 
+    // Get default company (first active company)
+    const defaultCompany = await prisma.company.findFirst({
+      where: { isActive: true },
+    });
+
+    if (!defaultCompany) {
+      res.status(400).json({
+        message: 'No active company found. Please create a company first.',
+        error: 'NO_ACTIVE_COMPANY',
+      });
+      return;
+    }
+
     // Create the invoice
     const invoice = await prisma.invoice.create({
       data: {
         clientId: order.clientId,
+        companyId: defaultCompany.id,
         orderId: order.id,
         invoiceNumber,
         amount: order.amount,
+        currency: 'USD',
         issueDate,
         dueDate,
         status: 'DRAFT',
@@ -384,6 +450,13 @@ router.post('/generate/:orderId', async (req: Request, res: Response): Promise<v
             name: true,
             email: true,
             company: true,
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
           }
         },
         order: {
