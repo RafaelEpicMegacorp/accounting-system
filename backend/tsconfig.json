@@ -12,8 +12,19 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "tests/**/*"]
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "**/*.test.ts", 
+    "**/*.test.js",
+    "**/*.spec.ts", 
+    "**/*.spec.js",
+    "tests/**/*",
+    "test/**/*",
+    "__tests__/**/*"
+  ]
 }
