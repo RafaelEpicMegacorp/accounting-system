@@ -1,0 +1,13 @@
+providers = ["nodejs"]
+
+[variables]
+NIXPACKS_NODE_VERSION = "18"
+
+[phases.install]
+cmds = ["cd backend && npm ci"]
+
+[phases.build]
+cmds = ["cd backend && npm run build"]
+
+[start]
+cmd = "cd backend && npm start"
