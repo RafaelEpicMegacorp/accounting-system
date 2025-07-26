@@ -25,6 +25,7 @@ import {
   InputLabel,
   Select,
   Grid,
+  Checkbox,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -66,6 +67,8 @@ import ViewToggle, { ViewMode } from '../data-display/ViewToggle';
 import InvoiceCardsGrid from './InvoiceCardsGrid';
 import AdvancedFilters, { FilterState } from '../data-display/AdvancedFilters';
 import { useInvoiceFilters } from '../../hooks/useInvoiceFilters';
+import BulkActionBar from '../data-display/BulkActionBar';
+import { useBulkSelection } from '../../hooks/useBulkSelection';
 
 interface InvoiceListProps {
   onInvoiceSelect?: (invoice: InvoiceWithRelations) => void;
@@ -108,12 +111,112 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
   const [invoiceDetails, setInvoiceDetails] = useState<any>(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
 
+  // Bulk selection
+  const bulkSelection = useBulkSelection({
+    items: invoices,
+    getItemId: (invoice) => invoice.id,
+    isSelectableItem: (invoice) => {
+      // Can't select cancelled invoices for most operations
+      return invoice.status !== 'CANCELLED';
+    },
+  });
+
   // Handle refresh trigger from parent
   useEffect(() => {
     if (refreshTrigger > 0) {
       refetch();
+      bulkSelection.clearSelection();
     }
-  }, [refreshTrigger, refetch]);
+  }, [refreshTrigger, refetch, bulkSelection]);
+
+  // Handle bulk actions
+  const handleBulkAction = async (actionId: string) => {
+    const selectedInvoices = bulkSelection.selectedItems;
+    
+    if (selectedInvoices.length === 0) return;
+
+    try {
+      switch (actionId) {
+        case 'send':
+          // Send selected invoices
+          for (const invoice of selectedInvoices) {
+            if (invoice.status === 'DRAFT') {
+              await invoiceService.sendInvoiceEmail(invoice.id);
+            }
+          }
+          alert(`${selectedInvoices.length} invoices sent successfully!`);
+          break;
+
+        case 'mark-paid':
+          // Mark selected invoices as paid
+          for (const invoice of selectedInvoices) {
+            if (['SENT', 'OVERDUE'].includes(invoice.status)) {
+              await invoiceService.updateInvoiceStatus(invoice.id, 'PAID');
+            }
+          }
+          alert(`${selectedInvoices.length} invoices marked as paid!`);
+          break;
+
+        case 'download-pdf':
+          // Download PDFs for selected invoices
+          for (const invoice of selectedInvoices) {
+            const pdfBlob = await invoiceService.downloadInvoicePdf(invoice.id);
+            const url = window.URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Invoice-${invoice.invoiceNumber}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }
+          alert(`${selectedInvoices.length} PDFs downloaded!`);
+          break;
+
+        case 'send-email':
+          // Send email reminders for selected invoices
+          for (const invoice of selectedInvoices) {
+            if (['SENT', 'OVERDUE'].includes(invoice.status)) {
+              await invoiceService.sendPaymentReminder(invoice.id, 'due_today');
+            }
+          }
+          alert(`${selectedInvoices.length} email reminders sent!`);
+          break;
+
+        case 'cancel':
+          if (confirm(`Are you sure you want to cancel ${selectedInvoices.length} invoices?`)) {
+            for (const invoice of selectedInvoices) {
+              if (invoice.status !== 'PAID') {
+                await invoiceService.updateInvoiceStatus(invoice.id, 'CANCELLED');
+              }
+            }
+            alert(`${selectedInvoices.length} invoices cancelled!`);
+          }
+          break;
+
+        case 'delete':
+          if (confirm(`Are you sure you want to delete ${selectedInvoices.length} invoices? This action cannot be undone.`)) {
+            for (const invoice of selectedInvoices) {
+              if (invoice.status === 'DRAFT') {
+                await invoiceService.deleteInvoice(invoice.id);
+              }
+            }
+            alert(`${selectedInvoices.length} invoices deleted!`);
+          }
+          break;
+
+        default:
+          console.warn(`Unknown bulk action: ${actionId}`);
+      }
+
+      // Refresh data and clear selection
+      refetch();
+      bulkSelection.clearSelection();
+    } catch (error) {
+      console.error(`Bulk action ${actionId} failed:`, error);
+      alert(`Bulk action failed. Please try again.`);
+    }
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -368,6 +471,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                   <Table>
                     <TableHead>
                       <TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            indeterminate={bulkSelection.isIndeterminate}
+                            checked={bulkSelection.isAllSelected}
+                            onChange={bulkSelection.toggleAll}
+                            disabled={bulkSelection.selectableCount === 0}
+                          />
+                        </TableCell>
                         <TableCell>Invoice</TableCell>
                         <TableCell>Client</TableCell>
                         <TableCell>Order</TableCell>
@@ -381,13 +492,27 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                       {invoices.map((invoice) => {
                         const dueDateStatus = getDueDateStatus(invoice);
                         
+                        const isSelected = bulkSelection.isSelected(invoice.id);
+                        const isSelectable = bulkSelection.selectableCount > 0;
+                        
                         return (
                           <TableRow
                             key={invoice.id}
                             hover
+                            selected={isSelected}
                             sx={{ cursor: 'pointer' }}
                             onClick={() => handleInvoiceClick(invoice)}
                           >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  bulkSelection.toggleSelection(invoice.id);
+                                }}
+                                disabled={!isSelectable}
+                              />
+                            </TableCell>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Avatar sx={{ mr: 2, bgcolor: 'primary.main', width: 32, height: 32 }}>
@@ -485,6 +610,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                   loading={loading}
                   searchQuery={filters.clientSearch}
                   statusFilter={filters.status}
+                  selectedInvoices={bulkSelection.selectedIds}
+                  selectable={true}
                   onInvoiceSelect={onInvoiceSelect}
                   onInvoiceEdit={onInvoiceEdit}
                   onInvoiceDelete={onInvoiceDelete}
@@ -494,6 +621,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                   onSendReminder={handleSendReminder}
                   onRecordPayment={handleRecordPayment}
                   onViewPaymentHistory={handleViewPaymentHistory}
+                  onToggleSelection={(invoice) => bulkSelection.toggleSelection(invoice.id)}
                 />
               </motion.div>
             )}
@@ -621,6 +749,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         onClose={() => setPaymentHistoryDialogOpen(false)}
         invoiceId={selectedInvoice?.id || null}
         onPaymentDeleted={handlePaymentDeleted}
+      />
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={bulkSelection.selectedItems.length}
+        onClearSelection={bulkSelection.clearSelection}
+        onBulkAction={handleBulkAction}
+        loading={loading}
       />
     </Box>
   );

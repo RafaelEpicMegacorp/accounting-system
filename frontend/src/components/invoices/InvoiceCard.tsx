@@ -12,6 +12,7 @@ import {
   MenuItem,
   Tooltip,
   Divider,
+  Checkbox,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -56,6 +57,8 @@ interface InvoiceCardProps {
   onRecordPayment?: (invoice: InvoiceWithRelations) => void;
   onViewPaymentHistory?: (invoice: InvoiceWithRelations) => void;
   selected?: boolean;
+  onToggleSelection?: (invoice: InvoiceWithRelations) => void;
+  selectable?: boolean;
 }
 
 const InvoiceCard: React.FC<InvoiceCardProps> = ({
@@ -70,6 +73,8 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
   onRecordPayment,
   onViewPaymentHistory,
   selected = false,
+  onToggleSelection,
+  selectable = false,
 }) => {
   const [menuAnchor, setMenuAnchor] = React.useState<null | HTMLElement>(null);
   const dueDateStatus = getDueDateStatus(invoice);
@@ -143,6 +148,16 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
           {/* Header */}
           <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {selectable && (
+                <Checkbox
+                  checked={selected}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onToggleSelection?.(invoice);
+                  }}
+                  sx={{ mr: 1, p: 0.5 }}
+                />
+              )}
               <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40, mr: 2 }}>
                 <ReceiptIcon />
               </Avatar>

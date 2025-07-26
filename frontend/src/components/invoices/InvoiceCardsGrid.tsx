@@ -19,6 +19,8 @@ interface InvoiceCardsGridProps {
   onSendReminder?: (invoice: InvoiceWithRelations, reminderType: 'before_due' | 'due_today' | 'overdue') => void;
   onRecordPayment?: (invoice: InvoiceWithRelations) => void;
   onViewPaymentHistory?: (invoice: InvoiceWithRelations) => void;
+  onToggleSelection?: (invoice: InvoiceWithRelations) => void;
+  selectable?: boolean;
 }
 
 const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
@@ -36,6 +38,8 @@ const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
   onSendReminder,
   onRecordPayment,
   onViewPaymentHistory,
+  onToggleSelection,
+  selectable = false,
 }) => {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -134,6 +138,7 @@ const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
                 <InvoiceCard
                   invoice={invoice}
                   selected={selectedInvoices.includes(invoice.id)}
+                  selectable={selectable}
                   onSelect={onInvoiceSelect}
                   onEdit={onInvoiceEdit}
                   onDelete={onInvoiceDelete}
@@ -143,6 +148,7 @@ const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
                   onSendReminder={onSendReminder}
                   onRecordPayment={onRecordPayment}
                   onViewPaymentHistory={onViewPaymentHistory}
+                  onToggleSelection={onToggleSelection}
                 />
               </motion.div>
             </Grid>
