@@ -44,6 +44,8 @@ import {
   canDeleteInvoice,
   getNextAllowedStatuses
 } from '../../services/invoiceService';
+import PaymentStatusIndicator from './PaymentStatusIndicator';
+import InvoiceAgingBadge from './InvoiceAgingBadge';
 
 interface InvoiceCardProps {
   invoice: InvoiceWithRelations;
@@ -212,32 +214,32 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Amount and Status */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <MoneyIcon sx={{ fontSize: 20, mr: 1, color: 'success.main' }} />
-              <Typography variant="h6" fontWeight="medium" color="success.main">
-                {formatCurrency(invoice.amount)}
-              </Typography>
-            </Box>
-            <Chip
-              label={getStatusDisplayText(invoice.status)}
-              color={getStatusColor(invoice.status)}
-              size="small"
-              icon={getStatusIcon(invoice.status)}
+          {/* Payment Status Visualization */}
+          <Box sx={{ mb: 2 }}>
+            <PaymentStatusIndicator
+              status={invoice.status.toLowerCase() as any}
+              amount={invoice.amount}
+              paidAmount={invoice.paidAmount || 0}
+              currency={invoice.currency}
+              dueDate={invoice.dueDate}
+              size="medium"
+              showProgress={true}
+              animated={true}
             />
           </Box>
 
-          {/* Due Date */}
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
+          {/* Aging Badge */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
               Due: {formatDate(invoice.dueDate)}
             </Typography>
-            <Chip
-              label={dueDateStatus.text}
-              color={dueDateStatus.color}
+            <InvoiceAgingBadge
+              dueDate={invoice.dueDate}
+              status={invoice.status.toLowerCase() as any}
+              variant="chip"
               size="small"
-              variant="outlined"
+              animated={true}
+              showTooltip={true}
             />
           </Box>
         </CardContent>

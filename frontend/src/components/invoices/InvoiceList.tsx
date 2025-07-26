@@ -45,6 +45,8 @@ import {
   Payment as PaymentIcon,
   History as HistoryIcon,
 } from '@mui/icons-material';
+import PaymentStatusIndicator from './PaymentStatusIndicator';
+import InvoiceAgingBadge from './InvoiceAgingBadge';
 import { 
   invoiceService, 
   InvoiceWithRelations, 
@@ -486,8 +488,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                         <TableCell>Client</TableCell>
                         <TableCell>Order</TableCell>
                         <TableCell>Amount</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Due Date</TableCell>
+                        <TableCell>Payment Status</TableCell>
+                        <TableCell>Due Date & Aging</TableCell>
                         <TableCell align="center">Actions</TableCell>
                       </TableRow>
                     </TableHead>
@@ -563,23 +565,29 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip
-                                label={getStatusDisplayText(invoice.status)}
-                                color={getStatusColor(invoice.status)}
+                              <PaymentStatusIndicator
+                                status={invoice.status.toLowerCase() as any}
+                                amount={invoice.amount}
+                                paidAmount={invoice.paidAmount || 0}
+                                currency={invoice.currency}
+                                dueDate={invoice.dueDate}
                                 size="small"
-                                icon={getStatusIcon(invoice.status)}
+                                showProgress={true}
+                                animated={false}
                               />
                             </TableCell>
                             <TableCell>
-                              <Box>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="body2">
                                   {formatDate(invoice.dueDate)}
                                 </Typography>
-                                <Chip
-                                  label={dueDateStatus.text}
-                                  color={dueDateStatus.color}
+                                <InvoiceAgingBadge
+                                  dueDate={invoice.dueDate}
+                                  status={invoice.status.toLowerCase() as any}
+                                  variant="badge"
                                   size="small"
-                                  variant="outlined"
+                                  animated={false}
+                                  showTooltip={true}
                                 />
                               </Box>
                             </TableCell>

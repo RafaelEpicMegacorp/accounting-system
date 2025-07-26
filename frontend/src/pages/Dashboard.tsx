@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { clientService } from '../services/clientService';
 import { orderService } from '../services/orderService';
 import { invoiceService } from '../services/invoiceService';
+import PaymentInsightsWidget from '../components/dashboard/PaymentInsightsWidget';
 
 interface DashboardStats {
   totalClients: number;
@@ -113,6 +114,13 @@ const Dashboard: React.FC = () => {
           </Grid>
         ))}
       </Grid>
+      
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" component="h2" gutterBottom>
+          Payment Insights & Analytics
+        </Typography>
+        <PaymentInsightsWidget />
+      </Box>
       
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" component="h2" gutterBottom>

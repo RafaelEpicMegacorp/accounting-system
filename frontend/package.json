@@ -19,6 +19,7 @@
     "@emotion/styled": "^11.14.1",
     "@floating-ui/react": "^0.27.13",
     "@mui/icons-material": "^7.2.0",
+    "@mui/lab": "^7.0.0-beta.14",
     "@mui/material": "^7.2.0",
     "@mui/x-date-pickers": "^8.9.0",
     "@react-pdf/renderer": "^4.3.0",
