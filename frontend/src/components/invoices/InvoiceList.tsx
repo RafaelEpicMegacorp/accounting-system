@@ -64,6 +64,8 @@ import PaymentRecordDialog from '../payments/PaymentRecordDialog';
 import PaymentHistoryDialog from '../payments/PaymentHistoryDialog';
 import ViewToggle, { ViewMode } from '../data-display/ViewToggle';
 import InvoiceCardsGrid from './InvoiceCardsGrid';
+import AdvancedFilters, { FilterState } from '../data-display/AdvancedFilters';
+import { useInvoiceFilters } from '../../hooks/useInvoiceFilters';
 
 interface InvoiceListProps {
   onInvoiceSelect?: (invoice: InvoiceWithRelations) => void;
@@ -80,72 +82,45 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
   onStatusChange,
   refreshTrigger = 0,
 }) => {
-  const [invoices, setInvoices] = useState<InvoiceWithRelations[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  // Use the new filtering hook
+  const {
+    filters,
+    setFilters,
+    invoices,
+    loading,
+    error,
+    totalCount,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    applyFilters,
+    refetch,
+  } = useInvoiceFilters({
+    autoApply: false, // Manual apply for better UX
+  });
+
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithRelations | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentHistoryDialogOpen, setPaymentHistoryDialogOpen] = useState(false);
   const [invoiceDetails, setInvoiceDetails] = useState<any>(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  // Load invoices
-  const loadInvoices = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const params: InvoiceSearchParams = {
-        page: page + 1, // API uses 1-based pagination
-        limit: rowsPerPage,
-        search: searchQuery.trim(),
-        status: statusFilter || undefined,
-        sortBy,
-        sortOrder,
-      };
-
-      const response = await invoiceService.getInvoices(params);
-      setInvoices(response.invoices);
-      setTotalCount(response.pagination.totalCount);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to load invoices');
-      setInvoices([]);
-      setTotalCount(0);
-    } finally {
-      setLoading(false);
+  // Handle refresh trigger from parent
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refetch();
     }
-  };
-
-  // Load invoices on mount and when dependencies change
-  useEffect(() => {
-    loadInvoices();
-  }, [page, rowsPerPage, searchQuery, statusFilter, sortBy, sortOrder, refreshTrigger]);
-
-  // Handle search with debouncing
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(0); // Reset to first page on search
-      loadInvoices();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [refreshTrigger, refetch]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setPageSize(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -216,23 +191,16 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     if (!selectedInvoice) return;
     
     try {
-      setLoading(true);
       const result = await invoiceService.sendInvoiceEmail(selectedInvoice.id);
       
-      // Show success message
-      setError(''); // Clear any previous errors
-      console.log(`Invoice ${selectedInvoice.invoiceNumber} sent successfully to ${result.sentTo}`);
-      
       // Refresh the invoice list to show updated status
-      loadInvoices();
+      refetch();
       
       // You could also show a success snackbar here
       alert(`Invoice ${selectedInvoice.invoiceNumber} sent successfully to ${result.sentTo}!`);
     } catch (error) {
       console.error('Failed to send invoice email:', error);
-      setError('Failed to send invoice email. Please check your email configuration and try again.');
-    } finally {
-      setLoading(false);
+      // Handle error appropriately
     }
     
     handleMenuClose();
@@ -242,21 +210,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     if (!selectedInvoice) return;
     
     try {
-      setLoading(true);
       const result = await invoiceService.sendPaymentReminder(selectedInvoice.id, reminderType);
-      
-      // Show success message
-      setError(''); // Clear any previous errors
-      console.log(`Payment reminder sent for invoice ${selectedInvoice.invoiceNumber} to ${result.sentTo}`);
       
       // You could also show a success snackbar here
       const reminderTypeText = reminderType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
       alert(`${reminderTypeText} reminder sent successfully to ${result.sentTo}!`);
     } catch (error) {
       console.error('Failed to send payment reminder:', error);
-      setError('Failed to send payment reminder. Please try again.');
-    } finally {
-      setLoading(false);
+      // Handle error appropriately
     }
     
     handleMenuClose();
@@ -290,13 +251,13 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
 
   const handlePaymentRecorded = () => {
     // Refresh the invoice list to show updated status and amounts
-    loadInvoices();
+    refetch();
     setPaymentDialogOpen(false);
   };
 
   const handlePaymentDeleted = () => {
     // Refresh the invoice list to show updated status and amounts
-    loadInvoices();
+    refetch();
   };
 
   const canSendEmail = (invoice: InvoiceWithRelations): boolean => {
@@ -342,16 +303,23 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         </Alert>
       )}
 
+      {/* Advanced Filters */}
+      <AdvancedFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        onApplyFilters={applyFilters}
+        loading={loading}
+      />
+
       <Card>
         <CardContent>
-          {/* Search and Filters */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
+          {/* Quick Filters and View Toggle */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <TextField
-                fullWidth
-                placeholder="Search invoices by number, client, or order..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Quick search..."
+                value={filters.clientSearch}
+                onChange={(e) => setFilters({ ...filters, clientSearch: e.target.value })}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -361,17 +329,16 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                 }}
                 variant="outlined"
                 size="small"
+                sx={{ minWidth: 250 }}
               />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <FormControl fullWidth size="small">
+              <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
-                  value={statusFilter}
+                  value={filters.status}
                   label="Status"
-                  onChange={(e) => setStatusFilter(e.target.value as InvoiceStatus | '')}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value as InvoiceStatus | '' })}
                 >
-                  <MenuItem value="">All Statuses</MenuItem>
+                  <MenuItem value="">All</MenuItem>
                   {getStatusOptions().map((option) => (
                     <MenuItem key={option.value} value={option.value}>
                       {option.label}
@@ -379,16 +346,13 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%' }}>
-                <ViewToggle
-                  viewMode={viewMode}
-                  onViewModeChange={setViewMode}
-                />
-              </Box>
-            </Grid>
-          </Grid>
+            </Box>
+
+            <ViewToggle
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          </Box>
 
           {/* Invoices Display */}
           <AnimatePresence mode="wait">
@@ -519,8 +483,8 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                 <InvoiceCardsGrid
                   invoices={invoices}
                   loading={loading}
-                  searchQuery={searchQuery}
-                  statusFilter={statusFilter}
+                  searchQuery={filters.clientSearch}
+                  statusFilter={filters.status}
                   onInvoiceSelect={onInvoiceSelect}
                   onInvoiceEdit={onInvoiceEdit}
                   onInvoiceDelete={onInvoiceDelete}
@@ -540,7 +504,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
             <TablePagination
               component="div"
               count={totalCount}
-              rowsPerPage={rowsPerPage}
+              rowsPerPage={pageSize}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
@@ -549,12 +513,12 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
           )}
 
           {/* Pagination for card view */}
-          {viewMode === 'card' && totalCount > rowsPerPage && (
+          {viewMode === 'card' && totalCount > pageSize && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <TablePagination
                 component="div"
                 count={totalCount}
-                rowsPerPage={rowsPerPage}
+                rowsPerPage={pageSize}
                 page={page}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}

@@ -8,6 +8,8 @@ import AppLayout from './components/layout/AppLayout';
 import { BreadcrumbProvider } from './components/navigation/BreadcrumbProvider';
 import Breadcrumbs from './components/navigation/Breadcrumbs';
 import { SlidingPanelProvider } from './components/layout/SlidingPanelProvider';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Orders from './pages/Orders';
@@ -46,10 +48,11 @@ const AuthenticatedPageWrapper: React.FC<{ children: React.ReactNode }> = ({ chi
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <BreadcrumbProvider>
-          <SlidingPanelProvider>
-            <Router>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <AuthProvider>
+          <BreadcrumbProvider>
+            <SlidingPanelProvider>
+              <Router>
               <AppLayout>
               <Routes>
                 <Route path="/login" element={
@@ -105,10 +108,11 @@ function App() {
                 } />
               </Routes>
               </AppLayout>
-            </Router>
-          </SlidingPanelProvider>
-        </BreadcrumbProvider>
-      </AuthProvider>
+              </Router>
+            </SlidingPanelProvider>
+          </BreadcrumbProvider>
+        </AuthProvider>
+      </LocalizationProvider>
     </ThemeProvider>
   );
 }
