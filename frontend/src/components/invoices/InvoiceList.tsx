@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -27,6 +26,7 @@ import {
   Select,
   Grid,
 } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search as SearchIcon,
   MoreVert as MoreVertIcon,
@@ -62,6 +62,8 @@ import {
 import { paymentService } from '../../services/paymentService';
 import PaymentRecordDialog from '../payments/PaymentRecordDialog';
 import PaymentHistoryDialog from '../payments/PaymentHistoryDialog';
+import ViewToggle, { ViewMode } from '../data-display/ViewToggle';
+import InvoiceCardsGrid from './InvoiceCardsGrid';
 
 interface InvoiceListProps {
   onInvoiceSelect?: (invoice: InvoiceWithRelations) => void;
@@ -94,6 +96,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
   const [paymentHistoryDialogOpen, setPaymentHistoryDialogOpen] = useState(false);
   const [invoiceDetails, setInvoiceDetails] = useState<any>(null);
   const [remainingAmount, setRemainingAmount] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
   // Load invoices
   const loadInvoices = async () => {
@@ -343,7 +346,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
         <CardContent>
           {/* Search and Filters */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
                 placeholder="Search invoices by number, client, or order..."
@@ -360,7 +363,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -377,143 +380,188 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item xs={12} md={3}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', height: '100%' }}>
+                <ViewToggle
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
+              </Box>
+            </Grid>
           </Grid>
 
-          {/* Invoices Table */}
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Invoice</TableCell>
-                  <TableCell>Client</TableCell>
-                  <TableCell>Order</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Due Date</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {invoices.map((invoice) => {
-                  const dueDateStatus = getDueDateStatus(invoice);
-                  
-                  return (
-                    <TableRow
-                      key={invoice.id}
-                      hover
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => handleInvoiceClick(invoice)}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar sx={{ mr: 2, bgcolor: 'primary.main', width: 32, height: 32 }}>
-                            <ReceiptIcon sx={{ fontSize: 18 }} />
-                          </Avatar>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight="medium">
-                              {invoice.invoiceNumber}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Issued {formatDate(invoice.issueDate)}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="medium">
-                            {invoice.client.name}
-                          </Typography>
-                          {invoice.client.company && (
-                            <Typography variant="caption" color="text.secondary">
-                              {invoice.client.company}
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {invoice.order?.description || 'Manual Invoice'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {invoice.order?.frequency || 'One-time'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <MoneyIcon sx={{ fontSize: 16, mr: 0.5, color: 'success.main' }} />
-                          <Typography variant="body2" fontWeight="medium">
-                            {formatCurrency(invoice.amount)}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusDisplayText(invoice.status)}
-                          color={getStatusColor(invoice.status)}
-                          size="small"
-                          icon={getStatusIcon(invoice.status)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2">
-                            {formatDate(invoice.dueDate)}
-                          </Typography>
-                          <Chip
-                            label={dueDateStatus.text}
-                            color={dueDateStatus.color}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Tooltip title="More actions">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMenuOpen(e, invoice);
-                            }}
+          {/* Invoices Display */}
+          <AnimatePresence mode="wait">
+            {viewMode === 'table' ? (
+              <motion.div
+                key="table"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Invoice</TableCell>
+                        <TableCell>Client</TableCell>
+                        <TableCell>Order</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Due Date</TableCell>
+                        <TableCell align="center">Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {invoices.map((invoice) => {
+                        const dueDateStatus = getDueDateStatus(invoice);
+                        
+                        return (
+                          <TableRow
+                            key={invoice.id}
+                            hover
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => handleInvoiceClick(invoice)}
                           >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Avatar sx={{ mr: 2, bgcolor: 'primary.main', width: 32, height: 32 }}>
+                                  <ReceiptIcon sx={{ fontSize: 18 }} />
+                                </Avatar>
+                                <Box>
+                                  <Typography variant="subtitle2" fontWeight="medium">
+                                    {invoice.invoiceNumber}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    Issued {formatDate(invoice.issueDate)}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {invoice.client.name}
+                                </Typography>
+                                {invoice.client.company && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    {invoice.client.company}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {invoice.order?.description || 'Manual Invoice'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {invoice.order?.frequency || 'One-time'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <MoneyIcon sx={{ fontSize: 16, mr: 0.5, color: 'success.main' }} />
+                                <Typography variant="body2" fontWeight="medium">
+                                  {formatCurrency(invoice.amount)}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={getStatusDisplayText(invoice.status)}
+                                color={getStatusColor(invoice.status)}
+                                size="small"
+                                icon={getStatusIcon(invoice.status)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography variant="body2">
+                                  {formatDate(invoice.dueDate)}
+                                </Typography>
+                                <Chip
+                                  label={dueDateStatus.text}
+                                  color={dueDateStatus.color}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Tooltip title="More actions">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMenuOpen(e, invoice);
+                                  }}
+                                >
+                                  <MoreVertIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="cards"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <InvoiceCardsGrid
+                  invoices={invoices}
+                  loading={loading}
+                  searchQuery={searchQuery}
+                  statusFilter={statusFilter}
+                  onInvoiceSelect={onInvoiceSelect}
+                  onInvoiceEdit={onInvoiceEdit}
+                  onInvoiceDelete={onInvoiceDelete}
+                  onStatusChange={onStatusChange}
+                  onPdfDownload={handlePdfDownload}
+                  onSendEmail={handleSendEmail}
+                  onSendReminder={handleSendReminder}
+                  onRecordPayment={handleRecordPayment}
+                  onViewPaymentHistory={handleViewPaymentHistory}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Pagination */}
-          <TablePagination
-            component="div"
-            count={totalCount}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[5, 10, 25, 50]}
-          />
+          {/* Pagination - only show for table view and when card view doesn't have its own handling */}
+          {viewMode === 'table' && (
+            <TablePagination
+              component="div"
+              count={totalCount}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 25, 50]}
+            />
+          )}
 
-          {/* No Results */}
-          {!loading && invoices.length === 0 && (
-            <Box textAlign="center" py={4}>
-              <Typography variant="h6" color="text.secondary">
-                {searchQuery || statusFilter
-                  ? 'No invoices found matching your filters'
-                  : 'No invoices yet'
-                }
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                {searchQuery || statusFilter
-                  ? 'Try adjusting your search terms or filters'
-                  : 'Create your first invoice or generate one from an order'
-                }
-              </Typography>
+          {/* Pagination for card view */}
+          {viewMode === 'card' && totalCount > rowsPerPage && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+              <TablePagination
+                component="div"
+                count={totalCount}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+                rowsPerPageOptions={[9, 18, 27, 36]}
+                showFirstButton
+                showLastButton
+              />
             </Box>
           )}
         </CardContent>
