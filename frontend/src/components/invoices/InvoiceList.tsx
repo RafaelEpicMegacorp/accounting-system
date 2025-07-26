@@ -69,6 +69,8 @@ import AdvancedFilters, { FilterState } from '../data-display/AdvancedFilters';
 import { useInvoiceFilters } from '../../hooks/useInvoiceFilters';
 import BulkActionBar from '../data-display/BulkActionBar';
 import { useBulkSelection } from '../../hooks/useBulkSelection';
+import AdvancedSearchBar from '../data-display/AdvancedSearchBar';
+import SkeletonLoader from '../common/SkeletonLoader';
 
 interface InvoiceListProps {
   onInvoiceSelect?: (invoice: InvoiceWithRelations) => void;
@@ -215,6 +217,14 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
     } catch (error) {
       console.error(`Bulk action ${actionId} failed:`, error);
       alert(`Bulk action failed. Please try again.`);
+    }
+  };
+
+  // Handle advanced search
+  const handleAdvancedSearch = (query: string) => {
+    setFilters({ ...filters, clientSearch: query });
+    if (query.trim()) {
+      applyFilters();
     }
   };
 
@@ -416,24 +426,17 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
 
       <Card>
         <CardContent>
-          {/* Quick Filters and View Toggle */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <TextField
-                placeholder="Quick search..."
-                value={filters.clientSearch}
-                onChange={(e) => setFilters({ ...filters, clientSearch: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                variant="outlined"
-                size="small"
-                sx={{ minWidth: 250 }}
-              />
+          {/* Advanced Search and View Toggle */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+              <Box sx={{ flex: 1, maxWidth: 400 }}>
+                <AdvancedSearchBar
+                  value={filters.clientSearch}
+                  onChange={(value) => setFilters({ ...filters, clientSearch: value })}
+                  onSearch={handleAdvancedSearch}
+                  placeholder="Search invoices, clients, orders..."
+                />
+              </Box>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -489,7 +492,10 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {invoices.map((invoice) => {
+                      {loading && invoices.length === 0 ? (
+                        <SkeletonLoader type="table" rows={5} />
+                      ) : (
+                        invoices.map((invoice) => {
                         const dueDateStatus = getDueDateStatus(invoice);
                         
                         const isSelected = bulkSelection.isSelected(invoice.id);
@@ -592,7 +598,7 @@ const InvoiceList: React.FC<InvoiceListProps> = ({
                             </TableCell>
                           </TableRow>
                         );
-                      })}
+                      }))}
                     </TableBody>
                   </Table>
                 </TableContainer>

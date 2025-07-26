@@ -3,6 +3,7 @@ import { Grid, Box, Typography } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvoiceWithRelations, InvoiceStatus } from '../../services/invoiceService';
 import InvoiceCard from './InvoiceCard';
+import SkeletonLoader from '../common/SkeletonLoader';
 
 interface InvoiceCardsGridProps {
   invoices: InvoiceWithRelations[];
@@ -63,39 +64,7 @@ const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
   };
 
   if (loading && invoices.length === 0) {
-    return (
-      <Grid container spacing={3}>
-        {[...Array(6)].map((_, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Box
-                sx={{
-                  height: 280,
-                  bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                  '@keyframes pulse': {
-                    '0%': {
-                      opacity: 1,
-                    },
-                    '50%': {
-                      opacity: 0.5,
-                    },
-                    '100%': {
-                      opacity: 1,
-                    },
-                  },
-                }}
-              />
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-    );
+    return <SkeletonLoader type="card" rows={2} />;
   }
 
   if (!loading && invoices.length === 0) {
