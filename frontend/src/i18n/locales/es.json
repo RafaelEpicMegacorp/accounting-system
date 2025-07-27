@@ -1,0 +1,174 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "add": "Agregar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "refresh": "Actualizar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "clients": "Clientes",
+    "orders": "Pedidos",
+    "invoices": "Facturas",
+    "services": "Servicios",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión"
+  },
+  "dashboard": {
+    "title": "Panel Financiero",
+    "subtitle": "Análisis e insights integrales para su sistema de gestión de facturas",
+    "overview": "Resumen",
+    "revenue_analytics": "Análisis de Ingresos",
+    "payment_analytics": "Análisis de Pagos",
+    "client_insights": "Insights de Clientes",
+    "total_clients": "Total de Clientes",
+    "active_orders": "Pedidos Activos",
+    "pending_invoices": "Facturas Pendientes",
+    "outstanding_amount": "Monto Pendiente",
+    "revenue_growth": {
+      "positive": "Los ingresos han crecido un {{percentage}}% en los últimos 3 meses. ¡Excelente crecimiento!",
+      "negative": "Los ingresos han disminuido un {{percentage}}% en los últimos 3 meses. Se necesita revisar estrategias.",
+      "stable": "Los ingresos han {{change}} un {{percentage}}% en los últimos 3 meses. Sigue monitoreando las tendencias."
+    }
+  },
+  "analytics": {
+    "revenue_chart": {
+      "title": "Análisis de Ingresos",
+      "total_revenue": "Ingresos Totales",
+      "monthly_average": "Promedio Mensual",
+      "collection_rate": "Tasa de Cobro",
+      "chart_types": {
+        "area": "Gráfico de Área",
+        "bar": "Gráfico de Barras",
+        "line": "Gráfico de Líneas"
+      },
+      "time_ranges": {
+        "all": "Todo el Tiempo",
+        "6m": "6 Meses",
+        "3m": "3 Meses",
+        "1m": "1 Mes"
+      },
+      "metrics": {
+        "all": "Todas las Métricas",
+        "revenue": "Ingresos",
+        "paid": "Pagado",
+        "pending": "Pendiente",
+        "overdue": "Vencido"
+      }
+    },
+    "payment_analytics": {
+      "title": "Análisis de Pagos",
+      "success_rate": "Tasa de Éxito de Pagos",
+      "collection_time": "Tiempo Promedio de Cobro",
+      "overdue_rate": "Tasa de Vencimiento",
+      "insights": {
+        "excellent_success": "Excelente Tasa de Éxito de Pagos",
+        "low_success": "Baja Tasa de Éxito de Pagos",
+        "fast_collection": "Tiempo de Cobro Rápido",
+        "slow_collection": "Cobro de Pagos Lento",
+        "high_overdue": "Alta Tasa de Vencimiento",
+        "positive_trend": "Tendencia Positiva de Ingresos",
+        "negative_trend": "Declive de Ingresos"
+      }
+    },
+    "client_insights": {
+      "title": "Insights de Clientes",
+      "top_clients": "Mejores Clientes",
+      "risk_analysis": "Análisis de Riesgo",
+      "spending_patterns": "Patrones de Gasto",
+      "reliability_metrics": "Métricas de Confiabilidad",
+      "total_spent": "Total Gastado",
+      "payment_reliability": "Confiabilidad de Pago",
+      "risk_levels": {
+        "low": "Riesgo Bajo",
+        "medium": "Riesgo Medio",
+        "high": "Riesgo Alto"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Facturas",
+    "create": "Crear Factura",
+    "status": {
+      "draft": "Borrador",
+      "pending": "Pendiente",
+      "paid": "Pagado",
+      "overdue": "Vencido",
+      "cancelled": "Cancelado"
+    },
+    "form": {
+      "client": "Cliente",
+      "amount": "Monto",
+      "due_date": "Fecha de Vencimiento",
+      "description": "Descripción",
+      "items": "Artículos"
+    }
+  },
+  "clients": {
+    "title": "Clientes",
+    "create": "Agregar Cliente",
+    "name": "Nombre",
+    "email": "Correo",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "company": "Empresa"
+  },
+  "orders": {
+    "title": "Pedidos",
+    "create": "Crear Pedido",
+    "status": {
+      "pending": "Pendiente",
+      "in_progress": "En Progreso",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    }
+  },
+  "services": {
+    "title": "Servicios",
+    "create": "Agregar Servicio",
+    "name": "Nombre del Servicio",
+    "description": "Descripción",
+    "price": "Precio",
+    "category": "Categoría"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "email": "Correo",
+    "password": "Contraseña",
+    "forgot_password": "¿Olvidaste tu contraseña?",
+    "remember_me": "Recuérdame"
+  },
+  "errors": {
+    "general": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+    "network": "Error de red. Por favor, verifica tu conexión.",
+    "validation": "Por favor, revisa el formulario en busca de errores.",
+    "unauthorized": "No estás autorizado para realizar esta acción.",
+    "not_found": "El recurso solicitado no fue encontrado."
+  },
+  "accessibility": {
+    "trending_up": "Tendencia ascendente",
+    "trending_down": "Tendencia descendente",
+    "trending_stable": "Tendencia estable",
+    "chart_controls": "Controles del gráfico",
+    "select_time_range": "Seleccionar rango de tiempo",
+    "select_metrics": "Seleccionar métricas a mostrar",
+    "chart_summary": "Gráfico mostrando {{months}} meses de datos. Ingresos totales: {{revenue}}. Promedio mensual: {{average}}. Tasa de cobro: {{rate}}."
+  }
+}

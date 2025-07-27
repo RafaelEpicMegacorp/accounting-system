@@ -1,0 +1,174 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "refresh": "Refresh",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "orders": "Orders",
+    "invoices": "Invoices",
+    "services": "Services",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Financial Dashboard",
+    "subtitle": "Comprehensive analytics and insights for your invoice management system",
+    "overview": "Overview",
+    "revenue_analytics": "Revenue Analytics",
+    "payment_analytics": "Payment Analytics",
+    "client_insights": "Client Insights",
+    "total_clients": "Total Clients",
+    "active_orders": "Active Orders",
+    "pending_invoices": "Pending Invoices",
+    "outstanding_amount": "Outstanding Amount",
+    "revenue_growth": {
+      "positive": "Revenue has grown by {{percentage}}% over the last 3 months. Excellent growth!",
+      "negative": "Revenue has declined by {{percentage}}% over the last 3 months. Review strategies needed.",
+      "stable": "Revenue has {{change}} by {{percentage}}% over the last 3 months. Keep monitoring trends."
+    }
+  },
+  "analytics": {
+    "revenue_chart": {
+      "title": "Revenue Analytics",
+      "total_revenue": "Total Revenue",
+      "monthly_average": "Monthly Average",
+      "collection_rate": "Collection Rate",
+      "chart_types": {
+        "area": "Area Chart",
+        "bar": "Bar Chart",
+        "line": "Line Chart"
+      },
+      "time_ranges": {
+        "all": "All Time",
+        "6m": "6 Months",
+        "3m": "3 Months",
+        "1m": "1 Month"
+      },
+      "metrics": {
+        "all": "All Metrics",
+        "revenue": "Revenue",
+        "paid": "Paid",
+        "pending": "Pending",
+        "overdue": "Overdue"
+      }
+    },
+    "payment_analytics": {
+      "title": "Payment Analytics",
+      "success_rate": "Payment Success Rate",
+      "collection_time": "Average Collection Time",
+      "overdue_rate": "Overdue Rate",
+      "insights": {
+        "excellent_success": "Excellent Payment Success Rate",
+        "low_success": "Low Payment Success Rate",
+        "fast_collection": "Fast Collection Time",
+        "slow_collection": "Slow Payment Collection",
+        "high_overdue": "High Overdue Rate",
+        "positive_trend": "Positive Revenue Trend",
+        "negative_trend": "Revenue Decline"
+      }
+    },
+    "client_insights": {
+      "title": "Client Insights",
+      "top_clients": "Top Clients",
+      "risk_analysis": "Risk Analysis",
+      "spending_patterns": "Spending Patterns",
+      "reliability_metrics": "Reliability Metrics",
+      "total_spent": "Total Spent",
+      "payment_reliability": "Payment Reliability",
+      "risk_levels": {
+        "low": "Low Risk",
+        "medium": "Medium Risk",
+        "high": "High Risk"
+      }
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "create": "Create Invoice",
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
+    "form": {
+      "client": "Client",
+      "amount": "Amount",
+      "due_date": "Due Date",
+      "description": "Description",
+      "items": "Items"
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "create": "Add Client",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "company": "Company"
+  },
+  "orders": {
+    "title": "Orders",
+    "create": "Create Order",
+    "status": {
+      "pending": "Pending",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "services": {
+    "title": "Services",
+    "create": "Add Service",
+    "name": "Service Name",
+    "description": "Description",
+    "price": "Price",
+    "category": "Category"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "forgot_password": "Forgot Password?",
+    "remember_me": "Remember Me"
+  },
+  "errors": {
+    "general": "An error occurred. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "validation": "Please check the form for errors.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "not_found": "The requested resource was not found."
+  },
+  "accessibility": {
+    "trending_up": "Trending up",
+    "trending_down": "Trending down",
+    "trending_stable": "Stable trend",
+    "chart_controls": "Chart controls",
+    "select_time_range": "Select time range",
+    "select_metrics": "Select metrics to display",
+    "chart_summary": "Chart showing {{months}} months of data. Total revenue: {{revenue}}. Monthly average: {{average}}. Collection rate: {{rate}}."
+  }
+}

@@ -26,10 +26,12 @@ import { clientService } from '../services/clientService';
 import { orderService } from '../services/orderService';
 import { invoiceService } from '../services/invoiceService';
 import PaymentInsightsWidget from '../components/dashboard/PaymentInsightsWidget';
-import RevenueChart from '../components/analytics/RevenueChart';
-import PaymentAnalytics from '../components/analytics/PaymentAnalytics';
-import ClientInsights from '../components/analytics/ClientInsights';
 import useAnalytics from '../hooks/useAnalytics';
+
+// Lazy-loaded analytics components
+const RevenueChart = React.lazy(() => import('../components/analytics/RevenueChart'));
+const PaymentAnalytics = React.lazy(() => import('../components/analytics/PaymentAnalytics'));
+const ClientInsights = React.lazy(() => import('../components/analytics/ClientInsights'));
 
 interface DashboardStats {
   totalClients: number;
@@ -221,12 +223,14 @@ const Dashboard: React.FC = () => {
       {/* Quick Revenue Chart */}
       {analyticsData && (
         <Box sx={{ mb: 4 }}>
-          <RevenueChart
-            data={analyticsData.revenueData}
-            isLoading={analyticsLoading}
-            height={300}
-            showControls={false}
-          />
+          <React.Suspense fallback={<Skeleton variant="rectangular" width="100%" height={300} />}>
+            <RevenueChart
+              data={analyticsData.revenueData}
+              isLoading={analyticsLoading}
+              height={300}
+              showControls={false}
+            />
+          </React.Suspense>
         </Box>
       )}
 
@@ -323,12 +327,14 @@ const Dashboard: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             {analyticsData ? (
-              <RevenueChart
-                data={analyticsData.revenueData}
-                isLoading={analyticsLoading}
-                height={500}
-                showControls={true}
-              />
+              <React.Suspense fallback={<Skeleton variant="rectangular" width="100%" height={500} />}>
+                <RevenueChart
+                  data={analyticsData.revenueData}
+                  isLoading={analyticsLoading}
+                  height={500}
+                  showControls={true}
+                />
+              </React.Suspense>
             ) : (
               <Skeleton variant="rectangular" width="100%" height={500} />
             )}
@@ -344,12 +350,14 @@ const Dashboard: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             {analyticsData ? (
-              <PaymentAnalytics
-                data={analyticsData.paymentAnalytics}
-                isLoading={analyticsLoading}
-                onRefresh={() => window.location.reload()}
-                showInsights={true}
-              />
+              <React.Suspense fallback={<Skeleton variant="rectangular" width="100%" height={400} />}>
+                <PaymentAnalytics
+                  data={analyticsData.paymentAnalytics}
+                  isLoading={analyticsLoading}
+                  onRefresh={() => window.location.reload()}
+                  showInsights={true}
+                />
+              </React.Suspense>
             ) : (
               <Skeleton variant="rectangular" width="100%" height={400} />
             )}
@@ -365,15 +373,17 @@ const Dashboard: React.FC = () => {
             transition={{ duration: 0.2 }}
           >
             {analyticsData ? (
-              <ClientInsights
-                clientInsights={analyticsData.clientInsights}
-                isLoading={analyticsLoading}
-                onClientClick={(clientId) => {
-                  // TODO: Navigate to client details
-                  console.log('Navigate to client:', clientId);
-                }}
-                showFullDetails={true}
-              />
+              <React.Suspense fallback={<Skeleton variant="rectangular" width="100%" height={400} />}>
+                <ClientInsights
+                  clientInsights={analyticsData.clientInsights}
+                  isLoading={analyticsLoading}
+                  onClientClick={(clientId) => {
+                    // TODO: Navigate to client details
+                    console.log('Navigate to client:', clientId);
+                  }}
+                  showFullDetails={true}
+                />
+              </React.Suspense>
             ) : (
               <Skeleton variant="rectangular" width="100%" height={400} />
             )}

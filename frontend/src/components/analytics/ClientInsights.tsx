@@ -2,47 +2,21 @@ import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
-  CardHeader,
   Typography,
   Box,
   Grid,
   Avatar,
   Chip,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
   Tabs,
   Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Badge,
-  Tooltip,
   LinearProgress,
   Button,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import {
   Person,
-  TrendingUp,
-  TrendingDown,
   Warning,
   CheckCircle,
-  Schedule,
   AttachMoney,
-  Star,
-  ExpandMore,
-  Visibility,
-  ContactPhone,
   Business,
 } from '@mui/icons-material';
 import {
@@ -56,8 +30,6 @@ import {
   Cell,
   PieChart,
   Pie,
-  LineChart,
-  Line,
   Legend,
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -108,7 +80,7 @@ const RiskLevelIndicator: React.FC<RiskLevelProps> = ({ level, size = 'medium' }
 
 const ClientInsights: React.FC<ClientInsightsProps> = ({
   clientInsights,
-  isLoading = false,
+  isLoading: _isLoading = false,
   onClientClick,
   showFullDetails = true,
 }) => {
@@ -123,9 +95,10 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
           return b.totalSpent - a.totalSpent;
         case 'reliability':
           return b.paymentReliability - a.paymentReliability;
-        case 'risk':
+        case 'risk': {
           const riskOrder = { high: 3, medium: 2, low: 1 };
           return riskOrder[b.riskLevel] - riskOrder[a.riskLevel];
+        }
         default:
           return b.totalSpent - a.totalSpent;
       }

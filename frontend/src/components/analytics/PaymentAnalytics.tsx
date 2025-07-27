@@ -2,14 +2,10 @@ import React, { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
-  CardHeader,
   Typography,
   Box,
   Grid,
   LinearProgress,
-  Chip,
-  IconButton,
-  Tooltip,
   Tabs,
   Tab,
   Alert,
@@ -17,7 +13,6 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Divider,
   Button,
 } from '@mui/material';
 import {
@@ -27,7 +22,6 @@ import {
   TrendingDown,
   Warning,
   CheckCircle,
-  Error,
   Info,
   Refresh,
   Analytics,
@@ -44,8 +38,6 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   Legend,
-  LineChart,
-  Line,
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentAnalytics as PaymentAnalyticsData } from '../../hooks/useAnalytics';
@@ -162,7 +154,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
 const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
   data,
-  isLoading = false,
+  isLoading: _isLoading = false,
   onRefresh,
   showInsights = true,
 }) => {
@@ -261,7 +253,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
   }, [data]);
 
   // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (

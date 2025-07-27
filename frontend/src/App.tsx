@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Container, AppBar, Toolbar, Typography, Box, Button, CircularProgress } from '@mui/material';
-import { AuthProvider, useAuth, ProtectedRoute } from './contexts/AuthContext';
+import { Container, AppBar, Toolbar, Typography, Box, Button } from '@mui/material';
+import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
 import ThemeProvider from './theme/ThemeProvider';
 import ThemeToggle from './components/ThemeToggle';
 import AppLayout from './components/layout/AppLayout';
@@ -10,13 +10,16 @@ import Breadcrumbs from './components/navigation/Breadcrumbs';
 import { SlidingPanelProvider } from './components/layout/SlidingPanelProvider';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import Dashboard from './pages/Dashboard';
-import Clients from './pages/Clients';
-import Orders from './pages/Orders';
-import Invoices from './pages/Invoices';
-import Services from './pages/Services';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy-loaded pages for code splitting
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Clients = lazy(() => import('./pages/Clients'));
+const Orders = lazy(() => import('./pages/Orders'));
+const Invoices = lazy(() => import('./pages/Invoices'));
+const Services = lazy(() => import('./pages/Services'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
 
 // Simple navigation for unauthenticated users
 const SimpleNavigation: React.FC = () => {
@@ -59,7 +62,9 @@ function App() {
                   <>
                     <SimpleNavigation />
                     <Container component="main" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-                      <Login />
+                      <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+                        <Login />
+                      </Suspense>
                     </Container>
                   </>
                 } />
@@ -67,42 +72,54 @@ function App() {
                   <>
                     <SimpleNavigation />
                     <Container component="main" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-                      <Register />
+                      <Suspense fallback={<LoadingSpinner message="Loading..." />}>
+                        <Register />
+                      </Suspense>
                     </Container>
                   </>
                 } />
                 <Route path="/" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <AuthenticatedPageWrapper>
-                      <Dashboard />
+                      <Suspense fallback={<LoadingSpinner message="Loading dashboard..." />}>
+                        <Dashboard />
+                      </Suspense>
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />
                 <Route path="/clients" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <AuthenticatedPageWrapper>
-                      <Clients />
+                      <Suspense fallback={<LoadingSpinner message="Loading clients..." />}>
+                        <Clients />
+                      </Suspense>
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />
                 <Route path="/orders" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <AuthenticatedPageWrapper>
-                      <Orders />
+                      <Suspense fallback={<LoadingSpinner message="Loading orders..." />}>
+                        <Orders />
+                      </Suspense>
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />
                 <Route path="/invoices" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <AuthenticatedPageWrapper>
-                      <Invoices />
+                      <Suspense fallback={<LoadingSpinner message="Loading invoices..." />}>
+                        <Invoices />
+                      </Suspense>
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />
                 <Route path="/services" element={
                   <ProtectedRoute fallback={<Navigate to="/login" replace />}>
                     <AuthenticatedPageWrapper>
-                      <Services />
+                      <Suspense fallback={<LoadingSpinner message="Loading services..." />}>
+                        <Services />
+                      </Suspense>
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />

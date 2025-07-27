@@ -41,6 +41,7 @@ import {
 import { motion } from 'framer-motion';
 import { RevenueData } from '../../hooks/useAnalytics';
 import { formatCurrency } from '../../services/invoiceService';
+import { keyboardNav } from '../../utils/accessibility';
 
 export interface RevenueChartProps {
   data: RevenueData[];
@@ -117,7 +118,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
   }, [filteredData]);
 
   // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <Card sx={{ p: 2, boxShadow: 3, border: '1px solid', borderColor: 'divider' }}>
@@ -348,16 +349,17 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
         <CardHeader
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="h6">Revenue Analytics</Typography>
+              <Typography variant="h6" id="revenue-chart-title">Revenue Analytics</Typography>
               {analytics && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {analytics.trend === 'up' && <TrendingUp color="success" />}
-                  {analytics.trend === 'down' && <TrendingDown color="error" />}
-                  {analytics.trend === 'stable' && <TrendingFlat color="action" />}
+                  {analytics.trend === 'up' && <TrendingUp color="success" aria-label="Revenue trending up" />}
+                  {analytics.trend === 'down' && <TrendingDown color="error" aria-label="Revenue trending down" />}
+                  {analytics.trend === 'stable' && <TrendingFlat color="action" aria-label="Revenue stable" />}
                   <Chip
                     label={`${analytics.trendPercentage.toFixed(1)}%`}
                     size="small"
                     color={analytics.trend === 'up' ? 'success' : analytics.trend === 'down' ? 'error' : 'default'}
+                    aria-label={`Trend change: ${analytics.trendPercentage.toFixed(1)} percent`}
                   />
                 </Box>
               )}
@@ -386,22 +388,30 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
         />
         
         {showControls && (
-          <Box sx={{ px: 3, pb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Box 
+            sx={{ px: 3, pb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}
+            role="region"
+            aria-labelledby="revenue-chart-title"
+            aria-label="Chart controls"
+          >
             <ToggleButtonGroup
               value={chartType}
               exclusive
               onChange={(_, value) => value && setChartType(value)}
               size="small"
+              aria-label="Chart type selection"
             >
-              <ToggleButton value="area">Area</ToggleButton>
-              <ToggleButton value="bar">Bar</ToggleButton>
-              <ToggleButton value="line">Line</ToggleButton>
+              <ToggleButton value="area" aria-label="Area chart">Area</ToggleButton>
+              <ToggleButton value="bar" aria-label="Bar chart">Bar</ToggleButton>
+              <ToggleButton value="line" aria-label="Line chart">Line</ToggleButton>
             </ToggleButtonGroup>
             
             <FormControl size="small" sx={{ minWidth: 100 }}>
               <Select
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+                aria-label="Time range selection"
+                inputProps={{ 'aria-label': 'Select time range' }}
               >
                 <MenuItem value="all">All Time</MenuItem>
                 <MenuItem value="6m">6 Months</MenuItem>
@@ -414,6 +424,8 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
               <Select
                 value={metricView}
                 onChange={(e) => setMetricView(e.target.value as MetricView)}
+                aria-label="Metric view selection"
+                inputProps={{ 'aria-label': 'Select metrics to display' }}
               >
                 <MenuItem value="all">All Metrics</MenuItem>
                 <MenuItem value="revenue">Revenue</MenuItem>
@@ -458,7 +470,23 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
             </Box>
           )}
           
-          <Box sx={{ height, width: '100%' }}>
+          <Box 
+            sx={{ height, width: '100%' }}
+            role="img"
+            aria-labelledby="revenue-chart-title"
+            aria-describedby="revenue-chart-summary"
+          >
+            <div id="revenue-chart-summary" className="sr-only">
+              {analytics && (
+                `Revenue chart showing ${filteredData.length} months of data. 
+                 Total revenue: ${formatCurrency(analytics.totalRevenue)}. 
+                 Monthly average: ${formatCurrency(analytics.averageMonthlyRevenue)}. 
+                 Collection rate: ${analytics.totalRevenue > 0 
+                   ? `${((analytics.totalPaid / analytics.totalRevenue) * 100).toFixed(1)}%`
+                   : '0%'
+                 }.`
+              )}
+            </div>
             <ResponsiveContainer width="100%" height="100%">
               {renderChart()}
             </ResponsiveContainer>
