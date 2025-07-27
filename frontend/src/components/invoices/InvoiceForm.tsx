@@ -20,12 +20,23 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Stepper,
+  Step,
+  StepLabel,
+  Tabs,
+  Tab,
+  IconButton,
+  Divider,
 } from '@mui/material';
 import { 
   Receipt as ReceiptIcon, 
   AttachMoney as MoneyIcon,
   DateRange as DateIcon,
   Person as PersonIcon,
+  Palette as PaletteIcon,
+  Preview as PreviewIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { 
   invoiceService, 
@@ -40,6 +51,11 @@ import { clientService, Client } from '../../services/clientService';
 import { orderService, OrderWithClient } from '../../services/orderService';
 import { companyService, Company } from '../../services/companyService';
 import { serviceLibraryService, ServiceLibrary, getServiceCategoryOptions } from '../../services/serviceLibraryService';
+import { InvoiceTemplate, DEFAULT_TEMPLATES } from '../../types/invoiceTemplates';
+import InvoiceTemplateSelector from './InvoiceTemplateSelector';
+import InvoiceTemplatePreview from './InvoiceTemplatePreview';
+import { useIntelligentAutoFill } from '../../hooks/useIntelligentAutoFill';
+import AutoFillSuggestions from '../forms/AutoFillSuggestions';
 
 interface InvoiceFormProps {
   open: boolean;
@@ -96,6 +112,26 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const [error, setError] = useState('');
   const [loadingClients, setLoadingClients] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
+  
+  // Template-related state
+  const [selectedTemplate, setSelectedTemplate] = useState<InvoiceTemplate>(DEFAULT_TEMPLATES[0]);
+  const [currentTab, setCurrentTab] = useState(0); // 0: Form, 1: Template, 2: Preview
+
+  // Auto-fill functionality
+  const autoFill = useIntelligentAutoFill(
+    selectedClient,
+    selectedOrder,
+    formData,
+    [], // TODO: Pass actual invoice history when available
+    services,
+    {
+      enableClientHistory: true,
+      enableServiceSuggestions: true,
+      enableAmountPrediction: true,
+      enableDateSuggestions: true,
+      minConfidence: 0.6,
+    }
+  );
 
   // Load clients
   const loadClients = async () => {
@@ -327,6 +363,28 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
     }
   };
 
+  // Handle auto-fill suggestions
+  const handleApplySuggestion = (suggestion: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [suggestion.field]: suggestion.value
+    }));
+    autoFill.applySuggestion(suggestion);
+  };
+
+  const handleApplyAllSuggestions = () => {
+    const updates: Partial<InvoiceFormData> = {};
+    autoFill.suggestions.forEach(suggestion => {
+      updates[suggestion.field as keyof InvoiceFormData] = suggestion.value;
+    });
+    setFormData(prev => ({ ...prev, ...updates }));
+    autoFill.applyAllSuggestions();
+  };
+
+  const handleRejectSuggestion = (suggestion: any) => {
+    autoFill.applySuggestion(suggestion); // Just removes it from the list
+  };
+
   // Handle dialog close
   const handleClose = () => {
     if (!isSubmitting) {
@@ -357,7 +415,32 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Alert>
         )}
 
-        <Grid container spacing={3} sx={{ mt: 1 }}>
+        {/* Tabs Navigation */}
+        <Tabs 
+          value={currentTab} 
+          onChange={(_, newValue) => setCurrentTab(newValue)}
+          sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+        >
+          <Tab label="Invoice Details" icon={<ReceiptIcon />} />
+          <Tab label="Template" icon={<PaletteIcon />} />
+          <Tab label="Preview" icon={<PreviewIcon />} />
+        </Tabs>
+
+        {/* Tab Content */}
+        {currentTab === 0 && (
+          <Box>
+            {/* Auto-fill Suggestions */}
+            <AutoFillSuggestions
+              suggestions={autoFill.suggestions}
+              onApplySuggestion={handleApplySuggestion}
+              onApplyAllSuggestions={handleApplyAllSuggestions}
+              onRejectSuggestion={handleRejectSuggestion}
+              onClearSuggestions={autoFill.clearSuggestions}
+              isLoading={autoFill.isLoading}
+              sx={{ mb: 3 }}
+            />
+
+            <Grid container spacing={3}>
           {/* Company Selection */}
           <Grid item xs={12} md={6}>
             <Autocomplete
@@ -619,24 +702,114 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
               </Card>
             </Grid>
           )}
-        </Grid>
+            </Grid>
+          </Box>
+        )}
+
+        {/* Template Selection Tab */}
+        {currentTab === 1 && (
+          <Box>
+            <InvoiceTemplateSelector
+              selectedTemplate={selectedTemplate}
+              onTemplateSelect={setSelectedTemplate}
+              size="small"
+              showCustomization={true}
+            />
+          </Box>
+        )}
+
+        {/* Preview Tab */}
+        {currentTab === 2 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <InvoiceTemplatePreview
+              template={selectedTemplate}
+              invoiceData={{
+                invoiceNumber: `Preview-${Date.now()}`,
+                issueDate: formData.issueDate,
+                dueDate: formData.dueDate,
+                company: selectedCompany ? {
+                  name: selectedCompany.name,
+                  address: selectedCompany.address || 'Company Address',
+                  email: selectedCompany.email || 'company@example.com',
+                  phone: selectedCompany.phone || '(555) 123-4567',
+                } : {
+                  name: 'Your Company',
+                  address: 'Company Address',
+                  email: 'company@example.com',
+                  phone: '(555) 123-4567',
+                },
+                client: selectedClient ? {
+                  name: selectedClient.name,
+                  company: selectedClient.company,
+                  address: selectedClient.address || 'Client Address',
+                  email: selectedClient.email,
+                } : {
+                  name: 'Client Name',
+                  address: 'Client Address',
+                  email: 'client@example.com',
+                },
+                items: [
+                  {
+                    description: selectedOrder?.description || 'Service Description',
+                    quantity: 1,
+                    rate: formData.amount,
+                    amount: formData.amount,
+                  },
+                ],
+                subtotal: formData.amount,
+                tax: formData.amount * 0.08,
+                total: formData.amount * 1.08,
+                currency: formData.currency,
+                notes: 'Thank you for your business!',
+                terms: 'Payment is due within 30 days.',
+              }}
+              scale={0.4}
+              interactive={true}
+            />
+          </Box>
+        )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button 
-          onClick={handleClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={isSubmitting}
-          startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
-        >
-          {isSubmitting ? 'Creating...' : 'Create Invoice'}
-        </Button>
+      <DialogActions sx={{ px: 3, pb: 2, justifyContent: 'space-between' }}>
+        <Box>
+          <Button 
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {/* Navigation Buttons */}
+          <Button
+            onClick={() => setCurrentTab(Math.max(0, currentTab - 1))}
+            disabled={currentTab === 0}
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+          >
+            Previous
+          </Button>
+          
+          {currentTab < 2 ? (
+            <Button
+              onClick={() => setCurrentTab(Math.min(2, currentTab + 1))}
+              endIcon={<ArrowForwardIcon />}
+              variant="outlined"
+            >
+              Next
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isSubmitting}
+              startIcon={isSubmitting ? <CircularProgress size={20} /> : undefined}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Invoice'}
+            </Button>
+          )}
+        </Box>
       </DialogActions>
     </Dialog>
   );
