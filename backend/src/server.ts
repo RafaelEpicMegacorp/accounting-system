@@ -10,14 +10,15 @@ import { PDFService } from './services/pdfService';
 // Load environment variables
 dotenv.config();
 
-// Initialize Prisma client with connection pooling and optimization
+// Initialize Prisma client with optimized connection pooling for Neon quota limits
 export const prisma = new PrismaClient({
   datasources: {
     db: {
       url: process.env.DATABASE_URL,
     },
   },
-  log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+  log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'], // Reduced logging to minimize compute
+  errorFormat: 'minimal', // Reduce error processing overhead
 });
 
 // Create Express app
@@ -29,7 +30,7 @@ app.use(helmet());
 // CORS configuration
 const corsOrigins = process.env.NODE_ENV === 'production' 
   ? (process.env.CORS_ORIGINS || 'https://yourdomain.com').split(',') 
-  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:3000'];
+  : (process.env.CORS_ORIGINS_DEV || 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000').split(',');
 
 app.use(cors({
   origin: corsOrigins,
@@ -67,6 +68,9 @@ import invoiceRoutes from './routes/invoices';
 import paymentRoutes from './routes/payments';
 import companyRoutes from './routes/companies';
 import serviceRoutes from './routes/services';
+import userRoutes from './routes/users';
+import reportRoutes from './routes/reports';
+import subscriptionRoutes from './routes/subscriptions';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
@@ -75,6 +79,9 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

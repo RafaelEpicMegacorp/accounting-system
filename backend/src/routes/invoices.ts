@@ -483,6 +483,125 @@ router.post('/generate/:orderId', async (req: Request, res: Response): Promise<v
 });
 
 /**
+ * PUT /api/invoices/:id
+ * Update invoice details
+ */
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { amount, currency, issueDate, dueDate, notes } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid invoice ID',
+        error: 'INVALID_INVOICE_ID',
+      });
+      return;
+    }
+
+    // Check if invoice exists
+    const existingInvoice = await prisma.invoice.findUnique({
+      where: { id },
+    });
+
+    if (!existingInvoice) {
+      res.status(404).json({
+        message: 'Invoice not found',
+        error: 'INVOICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Only allow updates to DRAFT invoices
+    if (existingInvoice.status !== 'DRAFT') {
+      res.status(400).json({
+        message: 'Only draft invoices can be updated',
+        error: 'INVOICE_UPDATE_NOT_ALLOWED',
+      });
+      return;
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    
+    if (amount !== undefined) {
+      if (amount <= 0) {
+        res.status(400).json({
+          message: 'Amount must be a positive number',
+          error: 'INVALID_AMOUNT',
+        });
+        return;
+      }
+      updateData.amount = parseFloat(amount);
+    }
+
+    if (currency !== undefined) {
+      if (!['USD', 'EUR', 'GBP', 'BTC', 'ETH'].includes(currency)) {
+        res.status(400).json({
+          message: 'Invalid currency. Must be USD, EUR, GBP, BTC, or ETH',
+          error: 'INVALID_CURRENCY',
+        });
+        return;
+      }
+      updateData.currency = currency;
+    }
+
+    if (issueDate !== undefined) {
+      updateData.issueDate = new Date(issueDate);
+    }
+
+    if (dueDate !== undefined) {
+      updateData.dueDate = new Date(dueDate);
+    }
+
+    if (notes !== undefined) {
+      updateData.notes = notes;
+    }
+
+    // Update the invoice
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id },
+      data: updateData,
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            company: true,
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        },
+        order: {
+          select: {
+            id: true,
+            description: true,
+            frequency: true,
+          }
+        }
+      },
+    });
+
+    res.json({
+      message: 'Invoice updated successfully',
+      data: { invoice: updatedInvoice }
+    });
+  } catch (error) {
+    console.error('Update invoice error:', error);
+    res.status(500).json({
+      message: 'Failed to update invoice',
+      error: 'UPDATE_INVOICE_ERROR',
+    });
+  }
+});
+
+/**
  * PATCH /api/invoices/:id/status
  * Update invoice status
  */

@@ -1,0 +1,324 @@
+[
+  {
+    "name": "Premium Financial & Crypto News Marketing Package",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 4950,
+    "description": "Comprehensive marketing package including news distribution, social media, and content marketing",
+    "isActive": true
+  },
+  {
+    "name": "Standard Financial & Crypto Marketing Package",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 2475,
+    "description": "Standard marketing package with news distribution and social media promotion",
+    "isActive": true
+  },
+  {
+    "name": "Social Media Package",
+    "category": "SOCIAL_MEDIA",
+    "defaultPrice": 1250,
+    "description": "Social media marketing and management services",
+    "isActive": true
+  },
+  {
+    "name": "Facebook Management Monthly",
+    "category": "SOCIAL_MEDIA",
+    "defaultPrice": 750,
+    "description": "Monthly Facebook page management and advertising",
+    "isActive": true
+  },
+  {
+    "name": "Paid Advertising Campaign",
+    "category": "ADVERTISING",
+    "defaultPrice": 1875,
+    "description": "Google Ads and social media advertising campaign management",
+    "isActive": true
+  },
+  {
+    "name": "TikTok Ads Setup",
+    "category": "SOCIAL_MEDIA",
+    "defaultPrice": 625,
+    "description": "TikTok advertising account setup and initial campaign creation",
+    "isActive": true
+  },
+  {
+    "name": "Website Design & Development",
+    "category": "CREATIVE_SERVICES",
+    "defaultPrice": 3750,
+    "description": "Custom website design and development services",
+    "isActive": true
+  },
+  {
+    "name": "YouTube Marketing Package",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 1125,
+    "description": "YouTube channel optimization and video marketing",
+    "isActive": true
+  },
+  {
+    "name": "Sponsored Article",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 375,
+    "description": "Sponsored article writing and publication",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753694583598",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753694583996",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753695450750",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753695901458",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Deletable Service",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 100,
+    "description": "Service created for deletion test",
+    "isActive": false
+  },
+  {
+    "name": "Test Service 1753696558489",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Content Marketing",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753696832180",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Deletable Service",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 100,
+    "description": "Service created for deletion test",
+    "isActive": false
+  },
+  {
+    "name": "Test Service 1753696832768",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "Test Service 1753697238518",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753697352728",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753697458321",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Digital Analytics",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753697458946",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "Test Service 1753697678691",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Test Service 1753697679321",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "Brand Strategy",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Deletable Service",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 100,
+    "description": "Service created for deletion test",
+    "isActive": false
+  },
+  {
+    "name": "Digital Analytics",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "Brand Strategy",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "Social Media Management",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Content Marketing",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Social Media Management",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "Brand Strategy",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "Brand Strategy",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Deletable Service",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 100,
+    "description": "Service created for deletion test",
+    "isActive": false
+  },
+  {
+    "name": "Digital Analytics",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Professional service offering",
+    "isActive": true
+  },
+  {
+    "name": "SEO Optimization",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": true
+  },
+  {
+    "name": "Brand Strategy",
+    "category": "CONTENT_MARKETING",
+    "defaultPrice": 500,
+    "description": "Test service description",
+    "isActive": false
+  }
+]

@@ -469,6 +469,217 @@ router.delete(
 );
 
 /**
+ * Get a single payment by ID
+ * GET /api/payments/:id
+ */
+router.get(
+  '/:id',
+  [
+    param('id').matches(/^c[a-z0-9]{24}$/).withMessage('Invalid payment ID format'),
+  ],
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { id } = req.params;
+
+      const payment = await prisma.payment.findUnique({
+        where: { id },
+        include: {
+          invoice: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+              amount: true,
+              status: true,
+              client: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!payment) {
+        res.status(404).json({
+          success: false,
+          message: 'Payment not found',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: { payment },
+      });
+    } catch (error) {
+      console.error('Error fetching payment:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while fetching payment',
+      });
+    }
+  }
+);
+
+/**
+ * Create a payment for an invoice
+ * POST /api/payments
+ */
+router.post(
+  '/',
+  [
+    body('invoiceId').matches(/^c[a-z0-9]{24}$/).withMessage('Invalid invoice ID format'),
+    body('amount')
+      .isFloat({ min: 0.01 })
+      .withMessage('Amount must be a positive number'),
+    body('method')
+      .isIn(['BANK_TRANSFER', 'CREDIT_CARD', 'CHECK', 'CASH', 'CRYPTO', 'OTHER'])
+      .withMessage('Invalid payment method'),
+    body('paidDate')
+      .optional()
+      .isISO8601()
+      .withMessage('Invalid payment date format'),
+    body('notes')
+      .optional()
+      .isString()
+      .isLength({ max: 500 })
+      .withMessage('Notes must be a string with maximum 500 characters'),
+  ],
+  sanitizeInput,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array(),
+        });
+        return;
+      }
+
+      const { invoiceId, amount, method, paidDate, notes } = req.body;
+
+      // Get the invoice with current payments
+      const invoice = await prisma.invoice.findUnique({
+        where: { id: invoiceId },
+        include: {
+          payments: true,
+          client: true,
+          order: true,
+        },
+      });
+
+      if (!invoice) {
+        res.status(404).json({
+          success: false,
+          message: 'Invoice not found',
+        });
+        return;
+      }
+
+      // Calculate total paid amount including this payment
+      const currentPaidAmount = invoice.payments.reduce((sum, payment) => sum + payment.amount, 0);
+      const newTotalPaid = currentPaidAmount + amount;
+
+      // Validate payment amount doesn't exceed invoice amount
+      if (newTotalPaid > invoice.amount) {
+        res.status(400).json({
+          success: false,
+          message: `Payment amount would exceed invoice total. Invoice amount: $${invoice.amount.toFixed(2)}, Already paid: $${currentPaidAmount.toFixed(2)}, Maximum additional payment: $${(invoice.amount - currentPaidAmount).toFixed(2)}`,
+        });
+        return;
+      }
+
+      // Record the payment
+      const payment = await prisma.payment.create({
+        data: {
+          invoiceId,
+          amount,
+          method: method as PaymentType,
+          paidDate: paidDate ? new Date(paidDate) : new Date(),
+          notes,
+        },
+        include: {
+          invoice: {
+            select: {
+              id: true,
+              invoiceNumber: true,
+              amount: true,
+              status: true,
+              client: {
+                select: {
+                  id: true,
+                  name: true,
+                  company: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Update invoice status based on payment amount
+      let newStatus = invoice.status;
+      if (newTotalPaid >= invoice.amount) {
+        // Fully paid
+        newStatus = 'PAID';
+        await prisma.invoice.update({
+          where: { id: invoiceId },
+          data: {
+            status: 'PAID',
+            paidDate: payment.paidDate,
+          },
+        });
+      } else {
+        // Partially paid - keep current status but ensure it's not DRAFT
+        if (invoice.status === 'DRAFT') {
+          newStatus = 'SENT';
+          await prisma.invoice.update({
+            where: { id: invoiceId },
+            data: {
+              status: 'SENT',
+            },
+          });
+        }
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Payment recorded successfully',
+        data: {
+          payment,
+          paymentSummary: {
+            totalPaid: newTotalPaid,
+            remainingAmount: invoice.amount - newTotalPaid,
+            isFullyPaid: newTotalPaid >= invoice.amount,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('Error recording payment:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error while recording payment',
+      });
+    }
+  }
+);
+
+/**
  * Get all payments with filtering and pagination
  * GET /api/payments
  */

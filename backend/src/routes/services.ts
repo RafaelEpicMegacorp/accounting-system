@@ -152,6 +152,73 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
 });
 
 /**
+ * PUT /api/services/:id
+ * Update service
+ */
+router.put('/:id', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { name, description, category, defaultPrice, isActive } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid service ID',
+        error: 'INVALID_SERVICE_ID',
+      });
+      return;
+    }
+
+    // Check if service exists
+    const existingService = await prisma.serviceLibrary.findUnique({
+      where: { id },
+    });
+
+    if (!existingService) {
+      res.status(404).json({
+        message: 'Service not found',
+        error: 'SERVICE_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Validate category if provided
+    if (category && !['CONTENT_MARKETING', 'PODCAST_SPONSORSHIP', 'SOCIAL_MEDIA', 'ADVERTISING', 'CREATIVE_SERVICES', 'PLATFORM_MANAGEMENT', 'OTHER'].includes(category)) {
+      res.status(400).json({
+        message: 'Invalid category',
+        error: 'INVALID_CATEGORY',
+      });
+      return;
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    if (defaultPrice !== undefined) updateData.defaultPrice = defaultPrice ? parseFloat(defaultPrice) : null;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const service = await prisma.serviceLibrary.update({
+      where: { id },
+      data: updateData,
+    });
+
+    res.json({
+      success: true,
+      message: 'Service updated successfully',
+      data: { service }
+    });
+  } catch (error) {
+    console.error('Update service error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update service',
+      error: 'UPDATE_SERVICE_ERROR',
+    });
+  }
+});
+
+/**
  * PATCH /api/services/:id
  * Update service
  */

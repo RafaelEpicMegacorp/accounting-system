@@ -152,6 +152,10 @@ export const validateInvoiceCreation: ValidationChain[] = [
     .matches(/^c[a-z0-9]{24}$/)
     .withMessage('Please provide a valid client ID'),
   
+  body('companyId')
+    .matches(/^c[a-z0-9]{24}$/)
+    .withMessage('Please provide a valid company ID'),
+  
   body('orderId')
     .optional()
     .matches(/^c[a-z0-9]{24}$/)
@@ -166,6 +170,11 @@ export const validateInvoiceCreation: ValidationChain[] = [
   body('amount')
     .isFloat({ min: 0.01 })
     .withMessage('Amount must be a positive number'),
+  
+  body('currency')
+    .optional()
+    .isIn(['USD', 'EUR', 'GBP', 'BTC', 'ETH'])
+    .withMessage('Currency must be USD, EUR, GBP, BTC, or ETH'),
   
   body('issueDate')
     .isISO8601()
@@ -184,6 +193,12 @@ export const validateInvoiceCreation: ValidationChain[] = [
       
       return true;
     }),
+  
+  body('notes')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Notes must not exceed 1000 characters'),
 ];
 
 /**

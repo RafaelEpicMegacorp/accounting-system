@@ -11,7 +11,11 @@ import {
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
-const prisma = new PrismaClient();
+// Use optimized Prisma client with reduced connection pooling
+const prisma = new PrismaClient({
+  log: ['error'], // Minimal logging to reduce compute overhead
+  errorFormat: 'minimal'
+});
 
 /**
  * POST /api/auth/register
@@ -66,9 +70,17 @@ router.post('/register',
       });
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // Log specific database error details for debugging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      
       res.status(500).json({
         message: 'Registration failed',
         error: 'REGISTRATION_ERROR',
+        ...(process.env.NODE_ENV === 'development' && { details: error instanceof Error ? error.message : 'Unknown error' })
       });
     }
   }
@@ -234,6 +246,58 @@ router.put('/profile',
       res.status(500).json({
         message: 'Failed to update profile',
         error: 'UPDATE_PROFILE_ERROR',
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/auth/refresh
+ * Refresh JWT token
+ */
+router.post('/refresh',
+  authenticateToken,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          message: 'User not authenticated',
+          error: 'NOT_AUTHENTICATED',
+        });
+        return;
+      }
+
+      // Get fresh user data
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      });
+
+      if (!user) {
+        res.status(404).json({
+          message: 'User not found',
+          error: 'USER_NOT_FOUND',
+        });
+        return;
+      }
+
+      // Generate new JWT token
+      const newToken = generateToken(user);
+
+      res.json({
+        message: 'Token refreshed successfully',
+        user,
+        token: newToken,
+      });
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      res.status(500).json({
+        message: 'Failed to refresh token',
+        error: 'REFRESH_ERROR',
       });
     }
   }

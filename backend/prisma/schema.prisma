@@ -18,58 +18,88 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
+  companies Company[]
+
   @@map("users")
 }
 
 model Company {
-  id          String   @id @default(cuid())
-  name        String
-  legalName   String?
-  address     String?
-  city        String?
-  state       String?
-  country     String?
-  postalCode  String?
-  taxCode     String?
-  email       String
-  phone       String?
-  website     String?
-  logo        String?
-  signature   String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String   // Link to user who owns this company
+  name            String
+  legalName       String?
+  address         String?
+  city            String?
+  state           String?
+  country         String?
+  postalCode      String?
+  taxCode         String?
+  email           String
+  phone           String?
+  website         String?
+  logo            String?
+  signature       String?
+  
+  // Banking Information
+  bankAccount     String?
+  iban            String?
+  bicSwift        String?
+  
+  // Multi-company support
+  defaultCurrency Currency @default(USD)
+  isDefault       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  invoices       Invoice[]
-  paymentMethods PaymentMethod[]
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices               Invoice[]
+  paymentMethods         PaymentMethod[]
+  recurringSubscriptions RecurringSubscription[]
 
+  // Indexes
+  @@index([userId])
+  @@index([userId, isDefault])
   @@map("companies")
 }
 
 model Client {
-  id               String   @id @default(cuid())
-  name             String
-  company          String?
-  email            String   @unique
-  phone            String?
-  address          String?
-  city             String?
-  state            String?
-  country          String?
-  postalCode       String?
-  vatNumber        String?
-  registrationNumber String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  name                String
+  company             String?
+  email               String   @unique // Keep as primary email for backwards compatibility
+  
+  // Enhanced contact management
+  primaryContactName  String?
+  primaryContactEmail String?
+  ccEmails            String[] // Array of CC email addresses
+  
+  phone               String?
+  address             String?
+  city                String?
+  state               String?
+  country             String?
+  postalCode          String?
+  vatNumber           String?
+  registrationNumber  String?
+  
+  // Client preferences
+  preferredCurrency   Currency @default(USD)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   // Relations
-  orders   Order[]
-  invoices Invoice[]
+  orders                 Order[]
+  invoices               Invoice[]
+  recurringSubscriptions RecurringSubscription[]
 
   // Indexes for performance
   @@index([name])
   @@index([email])
+  @@index([primaryContactEmail])
   @@index([company])
   @@index([createdAt])
   @@map("clients")
@@ -85,20 +115,85 @@ enum ServiceCategory {
   OTHER
 }
 
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
 model ServiceLibrary {
-  id          String          @id @default(cuid())
-  name        String
-  description String?
-  category    ServiceCategory
+  id           String          @id @default(cuid())
+  name         String
+  description  String?
+  category     ServiceCategory
   defaultPrice Float?
-  isActive    Boolean         @default(true)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  
+  // Recurring billing support
+  isRecurring  Boolean       @default(false)
+  billingCycle BillingCycle?
+  billingDay   Int?          // Day of month (1-31) for monthly billing
+  
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   // Relations
-  invoiceItems InvoiceItem[]
+  invoiceItems          InvoiceItem[]
+  recurringSubscriptions RecurringSubscription[]
 
+  // Indexes
+  @@index([category])
+  @@index([isRecurring])
+  @@index([isActive])
   @@map("service_library")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  PAID_IN_ADVANCE
+}
+
+model RecurringSubscription {
+  id              String             @id @default(cuid())
+  clientId        String
+  serviceId       String
+  companyId       String             // Which company is providing the service
+  
+  // Billing details
+  price           Float
+  currency        Currency           @default(USD)
+  billingDay      Int                // Day of month for billing (1-31)
+  
+  // Subscription lifecycle
+  startDate       DateTime
+  nextBillingDate DateTime
+  endDate         DateTime?          // Optional end date
+  status          SubscriptionStatus @default(ACTIVE)
+  
+  // Payment tracking
+  isPaidInAdvance Boolean            @default(false)
+  advancePaidUntil DateTime?         // Date until which it's paid in advance
+  
+  // Notes and metadata
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  client  Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  service ServiceLibrary @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  company Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([clientId])
+  @@index([serviceId])
+  @@index([companyId])
+  @@index([status])
+  @@index([nextBillingDate])
+  @@index([status, nextBillingDate])
+  @@map("recurring_subscriptions")
 }
 
 enum PaymentMethodType {

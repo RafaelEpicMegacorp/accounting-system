@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional API Testing Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #16a34a;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--info-color), var(--success-color));
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .header .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .server-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--light-color);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger-color);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success-color);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            min-width: 250px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #15803d;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #b45309;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+        }
+
+        .auth-panel {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .auth-panel h3 {
+            color: #92400e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .token-display {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            margin-top: 12px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .progress-section {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .progress-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--info-color));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .category {
+            margin-bottom: 16px;
+        }
+
+        .category-header {
+            background: var(--dark-color);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .category-header:hover {
+            background: #374151;
+        }
+
+        .category-endpoints {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .category-endpoints.open {
+            max-height: 1000px;
+        }
+
+        .endpoint-item {
+            padding: 8px 16px;
+            margin: 2px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--light-color);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .endpoint-item:hover {
+            background: #e2e8f0;
+        }
+
+        .endpoint-item.selected {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .method-badge {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .method-GET { background: var(--success-color); color: white; }
+        .method-POST { background: var(--primary-color); color: white; }
+        .method-PUT { background: var(--warning-color); color: white; }
+        .method-PATCH { background: #f97316; color: white; }
+        .method-DELETE { background: var(--danger-color); color: white; }
+
+        .dashboard-main {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .dashboard-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .stat-card.total .stat-number { color: #8b5cf6; }
+        .stat-card.tested .stat-number { color: var(--primary-color); }
+        .stat-card.passed .stat-number { color: var(--success-color); }
+        .stat-card.failed .stat-number { color: var(--danger-color); }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .endpoint-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .endpoint-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .endpoint-card.pending::before { background: var(--text-secondary); }
+        .endpoint-card.success::before { background: var(--success-color); }
+        .endpoint-card.failure::before { background: var(--danger-color); }
+        .endpoint-card.testing::before { 
+            background: var(--warning-color);
+            animation: pulse 1s infinite;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .endpoint-card.success {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: var(--success-color);
+        }
+
+        .endpoint-card.failure {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            border-color: var(--danger-color);
+        }
+
+        .endpoint-card.testing {
+            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+            border-color: var(--warning-color);
+        }
+
+        .endpoint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .endpoint-url {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .endpoint-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .endpoint-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+        }
+
+        .endpoint-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 80%;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+            background: var(--light-color);
+            color: var(--text-primary);
+        }
+
+        .response-content {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            background: var(--light-color);
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .export-section {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            border: 2px solid var(--info-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+
+        .export-section h3 {
+            color: #0e7490;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                top: auto;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .dashboard-container {
+                padding: 12px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.875rem;
+            }
+            
+            .controls-bar {
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="header">
+            <h1><i class="fas fa-flask"></i> Professional API Testing Dashboard</h1>
+            <p class="subtitle">Comprehensive testing suite for 48+ endpoints with real-time monitoring</p>
+            <div class="server-status">
+                <div class="status-dot" id="serverStatus"></div>
+                <span id="serverStatusText">Initializing...</span>
+            </div>
+        </header>
+
+        <div class="controls-bar">
+            <div class="control-group">
+                <label for="apiUrl"><i class="fas fa-server"></i> API Base URL:</label>
+                <input type="text" id="apiUrl" class="form-input" placeholder="http://localhost:3001">
+            </div>
+            <div class="control-group">
+                <button class="btn btn-primary" onclick="detectServer()">
+                    <i class="fas fa-search"></i> Auto-Detect
+                </button>
+                <button class="btn btn-success" onclick="runSequentialTests()" id="runAllBtn">
+                    <i class="fas fa-play"></i> Run All Tests
+                </button>
+                <button class="btn btn-warning" onclick="runAuthFlow()">
+                    <i class="fas fa-key"></i> Authenticate
+                </button>
+                <button class="btn btn-secondary" onclick="clearResults()">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+                <button class="btn btn-secondary" onclick="exportResults()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <aside class="sidebar">
+                <div class="auth-panel">
+                    <h3><i class="fas fa-shield-alt"></i> Authentication</h3>
+                    <div class="auth-status">
+                        <div class="status-dot" id="authIndicator"></div>
+                        <span id="authStatus">Not Authenticated</span>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn btn-primary btn-sm" onclick="runAuthFlow()">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                    <div class="token-display" id="tokenDisplay" style="display: none;"></div>
+                </div>
+
+                <div class="progress-section">
+                    <h3><i class="fas fa-chart-line"></i> Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressText">0 / 48 tested</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                </div>
+
+                <div id="categoriesList"></div>
+            </aside>
+
+            <main class="dashboard-main">
+                <div class="dashboard-header">
+                    <h2 class="dashboard-title"><i class="fas fa-tachometer-alt"></i> Test Results</h2>
+                    <div class="control-group">
+                        <button class="btn btn-primary btn-sm" onclick="refreshView()">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <div class="stat-number" id="totalEndpoints">48</div>
+                        <div class="stat-label">Total Endpoints</div>
+                    </div>
+                    <div class="stat-card tested">
+                        <div class="stat-number" id="testedCount">0</div>
+                        <div class="stat-label">Tested</div>
+                    </div>
+                    <div class="stat-card passed">
+                        <div class="stat-number" id="passedCount">0</div>
+                        <div class="stat-label">Passed</div>
+                    </div>
+                    <div class="stat-card failed">
+                        <div class="stat-number" id="failedCount">0</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                </div>
+
+                <div class="filter-tabs">
+                    <div class="filter-tab active" onclick="filterResults('all')">All Tests</div>
+                    <div class="filter-tab" onclick="filterResults('passed')">✅ Passed</div>
+                    <div class="filter-tab" onclick="filterResults('failed')">❌ Failed</div>
+                    <div class="filter-tab" onclick="filterResults('pending')">⏳ Pending</div>
+                    <div class="filter-tab" onclick="filterResults('testing')">🔄 Testing</div>
+                </div>
+
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Endpoint cards will be generated here -->
+                </div>
+
+                <div class="export-section">
+                    <h3><i class="fas fa-file-export"></i> Export Results</h3>
+                    <p>Generate comprehensive test reports in multiple formats:</p>
+                    <div class="control-group" style="margin-top: 16px;">
+                        <button class="btn btn-primary btn-sm" onclick="exportToMarkdown()">
+                            <i class="fab fa-markdown"></i> Markdown
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportToJSON()">
+                            <i class="fas fa-file-code"></i> JSON
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="generateReport()">
+                            <i class="fas fa-file-alt"></i> Full Report
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Response Modal -->
+    <div class="modal" id="responseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Response Details</h3>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="response-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

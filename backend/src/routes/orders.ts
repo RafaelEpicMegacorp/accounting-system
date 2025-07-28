@@ -487,6 +487,73 @@ router.patch('/:id/status', async (req: Request, res: Response): Promise<void> =
 });
 
 /**
+ * POST /api/orders/:id/status
+ * Update order status only (POST equivalent for testing dashboard compatibility)
+ */
+router.post('/:id/status', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id || typeof id !== 'string') {
+      res.status(400).json({
+        message: 'Invalid order ID',
+        error: 'INVALID_ORDER_ID',
+      });
+      return;
+    }
+
+    if (!status || !['ACTIVE', 'PAUSED', 'CANCELLED'].includes(status)) {
+      res.status(400).json({
+        message: 'Invalid status. Must be ACTIVE, PAUSED, or CANCELLED',
+        error: 'INVALID_STATUS',
+      });
+      return;
+    }
+
+    // Check if order exists
+    const existingOrder = await prisma.order.findUnique({
+      where: { id },
+    });
+
+    if (!existingOrder) {
+      res.status(404).json({
+        message: 'Order not found',
+        error: 'ORDER_NOT_FOUND',
+      });
+      return;
+    }
+
+    // Update status
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: { status },
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            company: true,
+          }
+        }
+      },
+    });
+
+    res.json({
+      message: 'Order status updated successfully',
+      data: { order: updatedOrder }
+    });
+  } catch (error) {
+    console.error('Update order status error:', error);
+    res.status(500).json({
+      message: 'Failed to update order status',
+      error: 'UPDATE_ORDER_STATUS_ERROR',
+    });
+  }
+});
+
+/**
  * DELETE /api/orders/:id
  * Cancel/delete order
  */
