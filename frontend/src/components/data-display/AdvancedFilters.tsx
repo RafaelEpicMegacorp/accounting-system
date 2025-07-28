@@ -237,7 +237,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               
               <Grid container spacing={3}>
                 {/* Status Filter */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Status</InputLabel>
                     <Select
@@ -256,7 +256,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </Grid>
 
                 {/* Client Search */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -268,7 +268,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </Grid>
 
                 {/* Amount Range */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -280,7 +280,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -293,7 +293,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </Grid>
 
                 {/* Date Range */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <DatePicker
                     label="Date From"
                     value={filters.dateFrom}
@@ -307,7 +307,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <DatePicker
                     label="Date To"
                     value={filters.dateTo}
@@ -322,7 +322,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </Grid>
 
                 {/* Order Type */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Order Type</InputLabel>
                     <Select
@@ -338,7 +338,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 </Grid>
 
                 {/* Due Date Status */}
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid xs={12} sm={6} md={3}>
                   <FormControl fullWidth size="small">
                     <InputLabel>Due Date Status</InputLabel>
                     <Select

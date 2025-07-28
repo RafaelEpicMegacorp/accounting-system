@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FilterState } from '../components/data-display/AdvancedFilters';
 import { invoiceService, InvoiceSearchParams, InvoiceWithRelations } from '../services/invoiceService';
+import { warn } from '../utils/logger';
 
 export interface UseInvoiceFiltersOptions {
   initialFilters?: Partial<FilterState>;
@@ -69,7 +70,7 @@ export const useInvoiceFilters = (
           dateTo: parsed.dateTo ? new Date(parsed.dateTo) : null,
         };
       } catch (error) {
-        console.warn('Failed to parse saved filters:', error);
+        warn('Failed to parse saved filters:', error);
       }
     }
     return { ...defaultFilters, ...initialFilters };

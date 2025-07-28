@@ -95,7 +95,7 @@ const InvoiceCardsGrid: React.FC<InvoiceCardsGridProps> = ({
       <AnimatePresence mode="popLayout">
         <Grid container spacing={3}>
           {invoices.map((invoice) => (
-            <Grid item xs={12} sm={6} md={4} key={invoice.id}>
+            <Grid xs={12} sm={6} md={4} key={invoice.id}>
               <motion.div
                 variants={itemVariants}
                 layout

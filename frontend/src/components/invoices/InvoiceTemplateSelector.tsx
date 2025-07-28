@@ -244,7 +244,7 @@ const InvoiceTemplateSelector: React.FC<InvoiceTemplateSelectorProps> = ({
             const isFavorite = favorites.includes(template.id);
 
             return (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={template.id}>
+              <Grid xs={12} sm={6} md={4} lg={3} key={template.id}>
                 <TemplateCard
                   selected={isSelected}
                   variants={cardVariants}

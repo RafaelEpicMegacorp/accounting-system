@@ -152,7 +152,7 @@ const Dashboard: React.FC = () => {
     >
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {dashboardStats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid xs={12} sm={6} md={3} key={index}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -379,7 +379,7 @@ const Dashboard: React.FC = () => {
                   isLoading={analyticsLoading}
                   onClientClick={(clientId) => {
                     // TODO: Navigate to client details
-                    console.log('Navigate to client:', clientId);
+                    // Client navigation will be implemented later
                   }}
                   showFullDetails={true}
                 />

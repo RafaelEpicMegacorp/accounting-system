@@ -150,7 +150,7 @@ const PDFGenerator: React.FC<PDFGeneratorProps> = ({
     try {
       const blob = pdfBlob || await generatePDF();
       // In a real implementation, this would send the email via API
-      console.log('Sending email with PDF attachment...', blob);
+      // TODO: Implement actual email sending functionality
       setSuccess('Email sent successfully!');
       setTimeout(() => setSuccess(''), 3000);
       onEmailSent?.();

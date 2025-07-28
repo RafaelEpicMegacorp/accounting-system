@@ -227,7 +227,7 @@ const PaymentHistoryDialog: React.FC<PaymentHistoryDialogProps> = ({
                                 color="primary"
                                 onClick={() => {
                                   // TODO: Implement edit functionality
-                                  console.log('Edit payment:', payment.id);
+                                  // Payment edit functionality will be added later
                                 }}
                               >
                                 <EditIcon />

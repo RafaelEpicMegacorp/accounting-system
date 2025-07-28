@@ -56,7 +56,7 @@ const StyledTimelineItem = styled(TimelineItem)(({ theme }) => ({
   minHeight: 60,
 }));
 
-const TimelineCard = styled(motion(Paper))(({ theme }) => ({
+const TimelineCard = styled(motion.create(Paper))(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: theme.spacing(1),
   boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}`,

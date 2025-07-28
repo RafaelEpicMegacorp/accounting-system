@@ -175,7 +175,7 @@ const PaymentInsightsWidget: React.FC<PaymentInsightsWidgetProps> = ({ className
   const renderStatusExamples = () => (
     <Grid container spacing={2}>
       {sampleStatuses.map((status, index) => (
-        <Grid item xs={12} sm={6} key={index}>
+        <Grid xs={12} sm={6} key={index}>
           <Card sx={{ p: 2 }}>
             <PaymentStatusIndicator
               status={status.status}
@@ -235,7 +235,7 @@ const PaymentInsightsWidget: React.FC<PaymentInsightsWidgetProps> = ({ className
           {selectedTab === 0 && (
             <Grid container spacing={2}>
               {paymentInsights.map((insight, index) => (
-                <Grid item xs={12} sm={6} md={3} key={insight.label}>
+                <Grid xs={12} sm={6} md={3} key={insight.label}>
                   {renderInsightCard(insight, index)}
                 </Grid>
               ))}

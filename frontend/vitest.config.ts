@@ -9,9 +9,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    // Mock environment variables
+    // Mock environment variables - use actual env or default for tests
     env: {
-      VITE_API_URL: 'http://localhost:3001',
+      VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3001',
       NODE_ENV: 'test',
     },
     // Include coverage collection

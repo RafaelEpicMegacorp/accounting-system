@@ -442,7 +442,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
             <Grid container spacing={3}>
           {/* Company Selection */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <Autocomplete
               options={companies}
               getOptionLabel={(option) => option.name}
@@ -473,7 +473,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Grid>
 
           {/* Currency Selection */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               select
               fullWidth
@@ -491,7 +491,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Grid>
 
           {/* Client Selection */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Autocomplete
               options={clients}
               getOptionLabel={(option) => `${option.name} ${option.company ? `(${option.company})` : ''}`}
@@ -530,7 +530,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
           {/* Order Selection (Optional) */}
           {selectedClient && (
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Autocomplete
                 options={orders}
                 getOptionLabel={(option) => `${option.description} (${formatCurrency(option.amount)})`}
@@ -559,7 +559,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           )}
 
           {/* Amount */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Amount"
@@ -587,7 +587,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Grid>
 
           {/* Issue Date */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Issue Date"
@@ -613,7 +613,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </Grid>
 
           {/* Due Date */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Due Date"
@@ -640,7 +640,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
 
           {/* Invoice Preview */}
           {formData.amount > 0 && selectedClient && selectedCompany && (
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card sx={{ bgcolor: 'grey.50' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -649,7 +649,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                   </Typography>
                   
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         From Company
                       </Typography>
@@ -658,7 +658,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </Typography>
                     </Grid>
 
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Client
                       </Typography>
@@ -669,7 +669,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                     </Grid>
                     
                     {selectedOrder && (
-                      <Grid item xs={12} md={6}>
+                      <Grid xs={12} md={6}>
                         <Typography variant="body2" color="text.secondary">
                           Related Order
                         </Typography>
@@ -679,7 +679,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </Grid>
                     )}
                     
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Amount
                       </Typography>
@@ -689,7 +689,7 @@ const InvoiceForm: React.FC<InvoiceFormProps> = ({
                       </Typography>
                     </Grid>
                     
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Due Date
                       </Typography>

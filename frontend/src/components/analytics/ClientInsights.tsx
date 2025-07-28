@@ -253,7 +253,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
     <Box>
       {/* Summary Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -269,7 +269,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -285,7 +285,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -301,7 +301,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -376,7 +376,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
                 transition={{ duration: 0.2 }}
               >
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid xs={12} md={6}>
                     <Typography variant="h6" gutterBottom>
                       High Risk Clients
                     </Typography>
@@ -391,7 +391,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
                     )}
                   </Grid>
                   
-                  <Grid item xs={12} md={6}>
+                  <Grid xs={12} md={6}>
                     <Typography variant="h6" gutterBottom>
                       Most Reliable Clients
                     </Typography>
@@ -412,7 +412,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
                 transition={{ duration: 0.2 }}
               >
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={8}>
+                  <Grid xs={12} md={8}>
                     <Typography variant="h6" gutterBottom>
                       Spending Distribution
                     </Typography>
@@ -434,7 +434,7 @@ const ClientInsights: React.FC<ClientInsightsProps> = ({
                     </ResponsiveContainer>
                   </Grid>
                   
-                  <Grid item xs={12} md={4}>
+                  <Grid xs={12} md={4}>
                     <Typography variant="h6" gutterBottom>
                       Client Value Tiers
                     </Typography>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Client } from '../services/clientService';
 import { OrderWithClient } from '../services/orderService';
 import { InvoiceWithRelations, InvoiceFormData } from '../services/invoiceService';
@@ -72,7 +72,12 @@ export const useIntelligentAutoFill = (
   const [clientHistory, setClientHistory] = useState<ClientHistory | null>(null);
   const [lastUsedData, setLastUsedData] = useState<Partial<InvoiceFormData> | null>(null);
 
-  const finalOptions = { ...DEFAULT_OPTIONS, ...options };
+  // Refs to track previous values and prevent infinite loops
+  const previousFormDataRef = useRef<string>('');
+  const lastSavedDataRef = useRef<string>('');
+  const isGeneratingSuggestionsRef = useRef(false);
+
+  const finalOptions = useMemo(() => ({ ...DEFAULT_OPTIONS, ...options }), [options]);
 
   // Load stored data
   useEffect(() => {
@@ -86,19 +91,34 @@ export const useIntelligentAutoFill = (
     }
   }, []);
 
-  // Save form data when it changes
+  // Save form data when it changes (with deduplication)
   useEffect(() => {
-    if (Object.keys(currentFormData).length > 0) {
-      localStorage.setItem(STORAGE_KEYS.LAST_FORM_DATA, JSON.stringify(currentFormData));
-      setLastUsedData(currentFormData);
+    const currentFormDataStr = JSON.stringify(currentFormData);
+    
+    // Only save if form data has meaningfully changed and has content
+    if (
+      Object.keys(currentFormData).length > 0 && 
+      currentFormDataStr !== previousFormDataRef.current &&
+      currentFormDataStr !== lastSavedDataRef.current
+    ) {
+      previousFormDataRef.current = currentFormDataStr;
+      lastSavedDataRef.current = currentFormDataStr;
+      
+      // Debounce localStorage saves
+      const timeoutId = setTimeout(() => {
+        localStorage.setItem(STORAGE_KEYS.LAST_FORM_DATA, currentFormDataStr);
+        setLastUsedData(currentFormData);
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [currentFormData]);
 
-  // Build client history when client changes
-  const buildClientHistory = useCallback((client: Client): ClientHistory | null => {
-    if (!client || invoiceHistory.length === 0) return null;
+  // Build client history with memoization
+  const buildClientHistory = useMemo((): ClientHistory | null => {
+    if (!selectedClient || invoiceHistory.length === 0) return null;
 
-    const clientInvoices = invoiceHistory.filter(inv => inv.clientId === client.id);
+    const clientInvoices = invoiceHistory.filter(inv => inv.clientId === selectedClient.id);
     if (clientInvoices.length === 0) return null;
 
     // Calculate statistics
@@ -132,7 +152,7 @@ export const useIntelligentAutoFill = (
       .map(([word]) => word);
 
     const history: ClientHistory = {
-      clientId: client.id,
+      clientId: selectedClient.id,
       averageAmount,
       mostCommonCurrency,
       mostCommonServices,
@@ -144,26 +164,33 @@ export const useIntelligentAutoFill = (
 
     // Store in localStorage
     const storedHistories = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENT_HISTORY) || '{}');
-    storedHistories[client.id] = history;
+    storedHistories[selectedClient.id] = history;
     localStorage.setItem(STORAGE_KEYS.CLIENT_HISTORY, JSON.stringify(storedHistories));
 
     return history;
-  }, [invoiceHistory]);
+  }, [selectedClient, invoiceHistory]);
+
+  // Update client history when it changes
+  useEffect(() => {
+    setClientHistory(buildClientHistory);
+  }, [buildClientHistory]);
 
   // Generate suggestions based on context
   const generateSuggestions = useCallback(async () => {
+    // Prevent recursive calls
+    if (isGeneratingSuggestionsRef.current) return;
+    
     if (!selectedClient) {
       setSuggestions([]);
       return;
     }
 
+    isGeneratingSuggestionsRef.current = true;
     setIsLoading(true);
     const newSuggestions: AutoFillSuggestion[] = [];
 
     try {
-      // Build client history
-      const history = buildClientHistory(selectedClient);
-      setClientHistory(history);
+      const history = buildClientHistory;
 
       // Currency suggestion based on client history
       if (finalOptions.enableClientHistory && history && !currentFormData.currency) {
@@ -252,6 +279,7 @@ export const useIntelligentAutoFill = (
       console.error('Error generating auto-fill suggestions:', error);
     } finally {
       setIsLoading(false);
+      isGeneratingSuggestionsRef.current = false;
     }
   }, [
     selectedClient,
@@ -263,10 +291,14 @@ export const useIntelligentAutoFill = (
     lastUsedData,
   ]);
 
-  // Generate suggestions when dependencies change
+  // Generate suggestions when key dependencies change (debounced)
   useEffect(() => {
-    generateSuggestions();
-  }, [generateSuggestions]);
+    const timeoutId = setTimeout(() => {
+      generateSuggestions();
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [selectedClient, selectedOrder, generateSuggestions]); // Re-add generateSuggestions but with fixed dependencies
 
   const applySuggestion = useCallback((suggestion: AutoFillSuggestion) => {
     // This would be handled by the parent component

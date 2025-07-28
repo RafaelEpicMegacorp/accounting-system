@@ -136,7 +136,7 @@ const InvoiceTemplatePreview: React.FC<InvoiceTemplatePreviewProps> = ({
             sx={{ mb: 3 * scale }}
           >
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={branding.logoPosition === 'top-center' ? 12 : 6}>
+              <Grid xs={branding.logoPosition === 'top-center' ? 12 : 6}>
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center',
@@ -185,7 +185,7 @@ const InvoiceTemplatePreview: React.FC<InvoiceTemplatePreviewProps> = ({
               </Grid>
               
               {branding.logoPosition !== 'top-center' && (
-                <Grid item xs={6}>
+                <Grid xs={6}>
                   <Box sx={{ textAlign: 'right' }}>
                     <Typography 
                       sx={{ 
@@ -223,7 +223,7 @@ const InvoiceTemplatePreview: React.FC<InvoiceTemplatePreviewProps> = ({
             sx={{ mb: 3 * scale }}
           >
             <Grid container spacing={3}>
-              <Grid item xs={6}>
+              <Grid xs={6}>
                 <Typography 
                   sx={{ 
                     ...getTypographyStyle('heading'),
@@ -375,7 +375,7 @@ const InvoiceTemplatePreview: React.FC<InvoiceTemplatePreviewProps> = ({
             sx={{ mb: 3 * scale }}
           >
             <Grid container justifyContent="flex-end">
-              <Grid item xs={6} md={4}>
+              <Grid xs={6} md={4}>
                 <Box sx={{ 
                   border: `1px solid ${colors.border}`,
                   borderRadius: 1 * scale,

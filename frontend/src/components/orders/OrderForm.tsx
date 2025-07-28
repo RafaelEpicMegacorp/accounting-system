@@ -284,7 +284,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
         <Grid container spacing={3} sx={{ mt: 1 }}>
           {/* Client Selection */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Autocomplete
               options={clients}
               getOptionLabel={(option) => `${option.name} ${option.company ? `(${option.company})` : ''}`}
@@ -314,7 +314,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           </Grid>
 
           {/* Description */}
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <TextField
               fullWidth
               label="Description"
@@ -332,7 +332,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           </Grid>
 
           {/* Amount and Frequency */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Amount"
@@ -354,7 +354,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
             />
           </Grid>
 
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <FormControl fullWidth required>
               <InputLabel>Frequency</InputLabel>
               <Select
@@ -374,7 +374,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
           {/* Custom Days (if frequency is CUSTOM) */}
           {formData.frequency === 'CUSTOM' && (
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Custom Days"
@@ -398,7 +398,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           )}
 
           {/* Start Date */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Start Date"
@@ -417,7 +417,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
           </Grid>
 
           {/* Lead Time (Optional) */}
-          <Grid item xs={12} md={6}>
+          <Grid xs={12} md={6}>
             <TextField
               fullWidth
               label="Lead Time (Days)"
@@ -440,7 +440,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
           {/* Order Summary */}
           {formData.amount > 0 && (
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <Card sx={{ bgcolor: 'grey.50' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
@@ -449,7 +449,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                   </Typography>
                   
                   <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Billing Frequency
                       </Typography>
@@ -458,7 +458,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                       </Typography>
                     </Grid>
                     
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Amount per Invoice
                       </Typography>
@@ -467,7 +467,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
                       </Typography>
                     </Grid>
                     
-                    <Grid item xs={12} md={6}>
+                    <Grid xs={12} md={6}>
                       <Typography variant="body2" color="text.secondary">
                         Estimated Annual Revenue
                       </Typography>

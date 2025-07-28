@@ -297,7 +297,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
 
       {/* Metrics Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <MetricCard
             title="Payment Success Rate"
             value={`${data.paymentSuccessRate.toFixed(1)}%`}
@@ -310,7 +310,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <MetricCard
             title="Avg Collection Time"
             value={`${data.averagePaymentTime.toFixed(1)} days`}
@@ -323,7 +323,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <MetricCard
             title="Outstanding Amount"
             value={formatCurrency(data.totalPending + data.totalOverdue)}
@@ -333,7 +333,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
           />
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid xs={12} sm={6} md={3}>
           <MetricCard
             title="Overdue Rate"
             value={`${data.overdueRate.toFixed(1)}%`}
@@ -370,7 +370,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
                 transition={{ duration: 0.2 }}
               >
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
+                  <Grid xs={12} md={6}>
                     <Typography variant="h6" gutterBottom>
                       Payment Status Distribution
                     </Typography>
@@ -395,7 +395,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
                     </ResponsiveContainer>
                   </Grid>
                   
-                  <Grid item xs={12} md={6}>
+                  <Grid xs={12} md={6}>
                     <Typography variant="h6" gutterBottom>
                       Payment Breakdown
                     </Typography>
@@ -472,7 +472,7 @@ const PaymentAnalytics: React.FC<PaymentAnalyticsProps> = ({
                 ) : (
                   <Grid container spacing={2}>
                     {insights.map((insight, index) => (
-                      <Grid item xs={12} key={index}>
+                      <Grid xs={12} key={index}>
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}

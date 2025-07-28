@@ -16,8 +16,12 @@ export default defineConfig({
         manualChunks: {
           // Separate vendor chunks for better caching
           vendor: ['react', 'react-dom'],
-          mui: ['@mui/material', '@mui/icons-material'],
+          mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
           router: ['react-router-dom'],
+          // Separate analytics components for lazy loading
+          analytics: ['recharts', 'date-fns'],
+          query: ['@tanstack/react-query'],
+          motion: ['framer-motion'],
         },
       },
     },
@@ -31,13 +35,31 @@ export default defineConfig({
   
   // Development server settings
   server: {
-    port: 5173,
+    port: parseInt(process.env.VITE_PORT || '5173'),
     open: true,
+    // Optimize dev server performance
+    hmr: {
+      overlay: false, // Reduce console noise
+    },
+  },
+  
+  // Optimize dependencies pre-bundling
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@mui/material',
+      '@mui/icons-material',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'recharts',
+      'framer-motion',
+    ],
   },
   
   // Preview server settings (for production build testing)
   preview: {
-    port: 4173,
+    port: parseInt(process.env.VITE_PREVIEW_PORT || '4173'),
     open: true,
   },
 })

@@ -84,9 +84,8 @@ const Orders: React.FC = () => {
 
   // Handle order selection (for future order details view)
   const handleOrderSelect = (order: OrderWithClient) => {
-    // For now, just log the selection
-    console.log('Order selected:', order);
     // TODO: Navigate to order details page or show order details modal
+    // For now, selection is handled silently
   };
 
   return (

@@ -99,8 +99,8 @@ export interface InvoiceSchedule {
   description: string;
 }
 
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// API base URL - should always come from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Create axios instance
 const api = axios.create({

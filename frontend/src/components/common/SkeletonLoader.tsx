@@ -68,7 +68,7 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
       return (
         <Grid container spacing={3}>
           {Array.from({ length: rows * 3 }).map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
+            <Grid xs={12} sm={6} md={4} key={index}>
               <Card>
                 <CardContent>
                   {/* Header */}

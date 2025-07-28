@@ -16,10 +16,10 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-// Mock environment variables
+// Mock environment variables - use actual env or default for tests
 vi.mock('import.meta', () => ({
   env: {
-    VITE_API_URL: 'http://localhost:3001',
+    VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:3001',
     NODE_ENV: 'test',
   },
 }))

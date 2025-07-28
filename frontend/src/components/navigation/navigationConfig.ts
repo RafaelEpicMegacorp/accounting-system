@@ -126,7 +126,7 @@ export const getQuickActions = (): QuickAction[] => [
     id: 'create-invoice',
     label: 'Create Invoice',
     description: 'Create a new invoice',
-    action: () => console.log('Create invoice'), // TODO: Implement
+    action: () => {}, // TODO: Implement navigation to invoice creation
     icon: Receipt,
     keywords: ['new', 'create', 'invoice', 'bill'],
     shortcut: 'C I',
@@ -136,7 +136,7 @@ export const getQuickActions = (): QuickAction[] => [
     id: 'add-client',
     label: 'Add Client',
     description: 'Add a new client',
-    action: () => console.log('Add client'), // TODO: Implement
+    action: () => {}, // TODO: Implement navigation to client creation
     icon: People,
     keywords: ['new', 'add', 'client', 'customer'],
     shortcut: 'C C',
@@ -146,7 +146,7 @@ export const getQuickActions = (): QuickAction[] => [
     id: 'create-order',
     label: 'Create Order',
     description: 'Create a new recurring order',
-    action: () => console.log('Create order'), // TODO: Implement
+    action: () => {}, // TODO: Implement navigation to order creation
     icon: ShoppingCart,
     keywords: ['new', 'create', 'order', 'recurring'],
     shortcut: 'C O',
@@ -158,7 +158,7 @@ export const getQuickActions = (): QuickAction[] => [
     id: 'toggle-theme',
     label: 'Toggle Theme',
     description: 'Switch between light and dark mode',
-    action: () => console.log('Toggle theme'), // TODO: Implement
+    action: () => {}, // TODO: Implement theme toggle functionality
     keywords: ['theme', 'dark', 'light', 'mode'],
     shortcut: 'T T',
     category: 'settings',

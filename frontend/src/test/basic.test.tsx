@@ -12,7 +12,7 @@ describe('Frontend Testing Setup', () => {
   })
 
   it('should have access to test environment variables', () => {
-    expect(import.meta.env.VITE_API_URL).toBe('http://localhost:3001')
+    expect(import.meta.env.VITE_API_URL).toBeDefined()
     expect(import.meta.env.NODE_ENV).toBe('test')
   })
 

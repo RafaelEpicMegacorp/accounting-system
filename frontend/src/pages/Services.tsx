@@ -121,7 +121,7 @@ const Services: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={8}>
+            <Grid size={{ xs: 12, md: 8 }}>
               <TextField
                 fullWidth
                 placeholder="Search services by name or description..."
@@ -137,7 +137,7 @@ const Services: React.FC = () => {
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Category</InputLabel>
                 <Select
@@ -178,7 +178,7 @@ const Services: React.FC = () => {
       ) : (
         <Grid container spacing={3}>
           {services.map((service) => (
-            <Grid item xs={12} md={6} lg={4} key={service.id}>
+            <Grid size={{ xs: 12, md: 6, lg: 4 }} key={service.id}>
               <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>

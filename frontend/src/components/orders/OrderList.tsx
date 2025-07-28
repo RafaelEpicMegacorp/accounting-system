@@ -206,7 +206,7 @@ const OrderList: React.FC<OrderListProps> = ({
         <CardContent>
           {/* Search and Filters */}
           <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 placeholder="Search orders by description or client..."
@@ -223,7 +223,7 @@ const OrderList: React.FC<OrderListProps> = ({
                 size="small"
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid xs={12} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -240,7 +240,7 @@ const OrderList: React.FC<OrderListProps> = ({
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid xs={12} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Frequency</InputLabel>
                 <Select

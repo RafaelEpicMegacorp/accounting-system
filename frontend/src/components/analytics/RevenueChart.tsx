@@ -71,6 +71,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
 
   // Filter data based on time range
   const filteredData = useMemo(() => {
+    if (!data) return [];
     if (timeRange === 'all') return data;
     
     const monthsToShow = {
@@ -84,7 +85,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
 
   // Calculate trends and totals
   const analytics = useMemo(() => {
-    if (filteredData.length === 0) return null;
+    if (!filteredData || filteredData.length === 0) return null;
     
     const totalRevenue = filteredData.reduce((sum, item) => sum + item.revenue, 0);
     const totalPaid = filteredData.reduce((sum, item) => sum + item.paid, 0);
@@ -198,7 +199,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
             <YAxis 
               tick={{ fontSize: 12 }}
               stroke="#666"
-              tickFormatter={(value) => formatCurrency(value, true)}
+              tickFormatter={(value) => formatCurrency(value, 'USD')}
             />
             <RechartsTooltip content={<CustomTooltip />} />
             <Legend />
@@ -258,7 +259,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
             <YAxis 
               tick={{ fontSize: 12 }}
               stroke="#666"
-              tickFormatter={(value) => formatCurrency(value, true)}
+              tickFormatter={(value) => formatCurrency(value, 'USD')}
             />
             <RechartsTooltip content={<CustomTooltip />} />
             <Legend />
@@ -283,7 +284,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
             <YAxis 
               tick={{ fontSize: 12 }}
               stroke="#666"
-              tickFormatter={(value) => formatCurrency(value, true)}
+              tickFormatter={(value) => formatCurrency(value, 'USD')}
             />
             <RechartsTooltip content={<CustomTooltip />} />
             <Legend />

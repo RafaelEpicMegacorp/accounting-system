@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Container, AppBar, Toolbar, Typography, Box, Button } from '@mui/material';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, ProtectedRoute } from './contexts/AuthContext';
 import ThemeProvider from './theme/ThemeProvider';
 import ThemeToggle from './components/ThemeToggle';
@@ -18,8 +19,21 @@ const Clients = lazy(() => import('./pages/Clients'));
 const Orders = lazy(() => import('./pages/Orders'));
 const Invoices = lazy(() => import('./pages/Invoices'));
 const Services = lazy(() => import('./pages/Services'));
+const Analytics = lazy(() => import('./pages/Analytics'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+
+// Create a QueryClient instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Simple navigation for unauthenticated users
 const SimpleNavigation: React.FC = () => {
@@ -52,10 +66,11 @@ function App() {
   return (
     <ThemeProvider>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <AuthProvider>
-          <BreadcrumbProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
             <SlidingPanelProvider>
-              <Router>
+              <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <BreadcrumbProvider>
               <AppLayout>
               <Routes>
                 <Route path="/login" element={
@@ -123,12 +138,22 @@ function App() {
                     </AuthenticatedPageWrapper>
                   </ProtectedRoute>
                 } />
+                <Route path="/analytics" element={
+                  <ProtectedRoute fallback={<Navigate to="/login" replace />}>
+                    <AuthenticatedPageWrapper>
+                      <Suspense fallback={<LoadingSpinner message="Loading analytics..." />}>
+                        <Analytics />
+                      </Suspense>
+                    </AuthenticatedPageWrapper>
+                  </ProtectedRoute>
+                } />
               </Routes>
               </AppLayout>
+                </BreadcrumbProvider>
               </Router>
             </SlidingPanelProvider>
-          </BreadcrumbProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </QueryClientProvider>
       </LocalizationProvider>
     </ThemeProvider>
   );

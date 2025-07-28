@@ -84,11 +84,10 @@ const Invoices: React.FC = () => {
     }
   };
 
-  // Handle invoice selection (for future invoice details view)
+  // Handle invoice selection (for future invoice details view)  
   const handleInvoiceSelect = (invoice: InvoiceWithRelations) => {
-    // For now, just log the selection
-    console.log('Invoice selected:', invoice);
     // TODO: Navigate to invoice details page or show invoice details modal
+    // For now, selection is handled silently
   };
 
   // Handle generate invoices from due orders
@@ -207,7 +206,7 @@ const Invoices: React.FC = () => {
 
       {/* Quick Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -220,7 +219,7 @@ const Invoices: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -233,7 +232,7 @@ const Invoices: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -246,7 +245,7 @@ const Invoices: React.FC = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid xs={12} md={3}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
